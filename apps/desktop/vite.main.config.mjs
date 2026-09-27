@@ -8,8 +8,8 @@ export default defineConfig({
       output: {
         entryFileNames: 'main.js',
       },
-      // Mark Node.js built-ins and googleapis as external
-      // They will be loaded from node_modules at runtime
+      // Keep adm-zip bundled: Forge's Vite plugin packages .vite, not node_modules.
+      // External modules must be provided by the runtime or packaged separately.
       external: [
         'electron',
         'googleapis',
@@ -28,7 +28,6 @@ export default defineConfig({
         'net',
         'tls',
         'child_process',
-        'adm-zip',
       ],
     },
     outDir: '.vite/build',
@@ -40,4 +39,3 @@ export default defineConfig({
     },
   },
 });
-
