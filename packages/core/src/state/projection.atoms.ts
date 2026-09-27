@@ -3,3 +3,4 @@ import { ProjectionType } from '../types/projection.types';
 
 export const currentProjectionTypeAtom = atom<ProjectionType>('none');
 export const verseProjectionEnabledAtom = atom<boolean>(false);
+export const presentationProjectionEnabledAtom = atom<boolean>(true);

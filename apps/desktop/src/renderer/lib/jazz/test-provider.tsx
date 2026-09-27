@@ -3,8 +3,8 @@ import {
   JazzTestProvider,
   createJazzTestAccount,
 } from 'jazz-tools/react/testing';
-import { Account } from 'jazz-tools';
-import { WorshipViewAccount, Organization, ServiceList, pushCoListItem } from '@worship-view/schema';
+import { Account, co } from 'jazz-tools';
+import { WorshipViewAccount, Organization, ServiceList, Presentation, PresentationSlide, pushCoListItem } from '@worship-view/schema';
 import { useAtom } from 'jotai';
 import { v4 as uuidv4 } from 'uuid';
 import { songInputFocusAtom, verseInputFocusAtom, createTextStyle, DEFAULT_TEXT_STYLE_TEMPLATE } from '@worship-view/core';
@@ -102,6 +102,36 @@ export function TestAppWrapper({ children }: { children: ReactNode }) {
         (org.serviceLists.$jazz as any).push(defaultList);
         // Seed the default text style so slides have styling from the start
         createTextStyle(org, DEFAULT_TEXT_STYLE_TEMPLATE);
+        if (getTestFlag('test-seed-presentations')) {
+          const canvas = document.createElement('canvas');
+          canvas.width = 160;
+          canvas.height = 90;
+          const context = canvas.getContext('2d');
+          if (!context) throw new Error('Unable to create presentation test image');
+          context.fillStyle = '#336699';
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => {
+            if (value) resolve(value);
+            else reject(new Error('Unable to encode presentation test image'));
+          }));
+          const file = await co.fileStream().createFromBlob(blob);
+          for (const name of ['Presentation Shortcuts', 'Another Presentation']) {
+            const presentation = Presentation.create({
+              id: uuidv4(),
+              name,
+              searchText: name.toLowerCase(),
+              slideCount: 2,
+              createdAt: Date.now(),
+              slides: [0, 1].map((index) => PresentationSlide.create({
+                index,
+                slideType: 'image',
+                mimeType: 'image/png',
+                file,
+              })),
+            });
+            pushCoListItem(org.presentations, presentation);
+          }
+        }
         // Pre-set the active org ID so useActiveOrganization resolves immediately
         // without waiting for the auto-select useEffect to fire.
         localStorage.setItem(
