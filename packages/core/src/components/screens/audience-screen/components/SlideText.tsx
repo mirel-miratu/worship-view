@@ -1,6 +1,7 @@
 import {
   currentProjectionTypeAtom,
   verseProjectionEnabledAtom,
+  presentationProjectionEnabledAtom,
 } from '../../../../state/projection.atoms';
 import { FC, useMemo } from 'react';
 import CrossFade from './CrossFade';
@@ -50,6 +51,7 @@ const SlideText: FC = () => {
   const [selectedVerseReference] = useAtom(selectedVerseReferenceAtom);
   const [selectedVerseText] = useAtom(selectedVerseTextAtom);
   const [verseProjectionEnabled] = useAtom(verseProjectionEnabledAtom);
+  const [presentationProjectionEnabled] = useAtom(presentationProjectionEnabledAtom);
   const [prayerRequests] = useAtom(prayerRequestsAtom);
   const [selectedSongKey] = useAtom(selectedSongKeyAtom);
   const activeStyle = useActiveTextStyle();
@@ -139,7 +141,7 @@ const SlideText: FC = () => {
             {currentSongSlideNumber}/{totalSongSlides}
           </div>
         )}
-      {currentProjectionType === 'presentation' && selectedPresentationSlide && (
+      {currentProjectionType === 'presentation' && presentationProjectionEnabled && selectedPresentationSlide && (
         <div className="w-full h-full absolute inset-0">
           <PresentationSlideView
             fileStreamId={selectedPresentationSlide.fileStreamId}
@@ -148,6 +150,7 @@ const SlideText: FC = () => {
         </div>
       )}
       {currentProjectionType === 'presentation' &&
+        presentationProjectionEnabled &&
         selectedPresentationSlideIndex !== null &&
         totalPresentationSlides > 0 && (
           <div

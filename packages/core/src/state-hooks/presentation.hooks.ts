@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
 import { useCallback, useEffect, useRef } from 'react';
+import { presentationProjectionEnabledAtom } from '../state/projection.atoms';
 import {
   selectedPresentationAtom,
   selectedPresentationSlideIndexAtom,
@@ -34,6 +35,7 @@ export const usePresentationControl = () => {
 export const useManagePresentations = () => {
   const [selectedPresentation] = useAtom(selectedPresentationAtom);
   const [slideIndex, setSlideIndex] = useAtom(selectedPresentationSlideIndexAtom);
+  const [, setProjectionEnabled] = useAtom(presentationProjectionEnabledAtom);
   const [, setVideoPlaying] = useAtom(videoPlayingAtom);
   const [, setSeekRequest] = useAtom(videoSeekRequestAtom);
   const [, setCurrentTime] = useAtom(videoCurrentTimeAtom);
@@ -44,12 +46,13 @@ export const useManagePresentations = () => {
     if (selectedPresentation) {
       if (prevPresentationIdRef.current !== selectedPresentation.id) {
         setSlideIndex(0);
+        setProjectionEnabled(true);
         prevPresentationIdRef.current = selectedPresentation.id;
       }
     } else {
       prevPresentationIdRef.current = null;
     }
-  }, [selectedPresentation, setSlideIndex]);
+  }, [selectedPresentation, setSlideIndex, setProjectionEnabled]);
 
   // Reset video state when slide changes
   useEffect(() => {
