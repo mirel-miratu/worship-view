@@ -75,7 +75,9 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-webapp-${{ matrix.os }}
-          path: apps/webapp/playwright-report/
+          path: |
+            apps/webapp/playwright-report/
+            apps/webapp/test-results/
           retention-days: 14
 
   e2e:
@@ -116,5 +118,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report-${{ matrix.os }}
-          path: playwright-report/
+          path: |
+            apps/desktop/playwright-report/
+            apps/desktop/test-results/
           retention-days: 14
