@@ -90,6 +90,22 @@ export const MediaItem = co
   });
 
 /**
+ * CustomFont schema - a font file uploaded by the organization and selectable in text styles.
+ * `family` is the CSS font-family name the file is registered under.
+ */
+export const CustomFont = co
+  .map({
+    id: z.string(),
+    family: z.string(),
+    fileName: z.string(),
+    sizeBytes: z.number(),
+    file: co.fileStream(),
+  })
+  .withPermissions({
+    onInlineCreate: 'sameAsContainer',
+  });
+
+/**
  * TextStyle schema - represents a text style for audience slide projections
  * Uses sameAsContainer permissions so styles inherit organization's group
  */
@@ -173,6 +189,13 @@ export const Organization = co
     presentations: co.list(Presentation).withPermissions({
       onInlineCreate: 'sameAsContainer',
     }),
+    // Optional so organizations created before custom fonts still load for
+    // members who cannot run the migration that adds the list.
+    fonts: co.optional(
+      co.list(CustomFont).withPermissions({
+        onInlineCreate: 'sameAsContainer',
+      }),
+    ),
   })
   .withPermissions({
     onInlineCreate: 'newGroup',
@@ -192,6 +215,9 @@ export const Organization = co
     }
     if (!org.$jazz.has('presentations')) {
       org.$jazz.set('presentations', []);
+    }
+    if (!org.$jazz.has('fonts')) {
+      org.$jazz.set('fonts', []);
     }
 
     org.$jazz
@@ -256,6 +282,7 @@ export type MediaItemType = co.loaded<typeof MediaItem>;
 export type MediaAssetType = co.loaded<typeof MediaAsset>;
 export type PresentationSlideType = co.loaded<typeof PresentationSlide>;
 export type PresentationType = co.loaded<typeof Presentation>;
+export type CustomFontType = co.loaded<typeof CustomFont>;
 export type OrganizationType = co.loaded<typeof Organization>;
 export type WorshipViewAccountType = co.loaded<typeof WorshipViewAccount>;
 

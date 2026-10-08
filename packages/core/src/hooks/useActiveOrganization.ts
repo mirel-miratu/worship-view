@@ -20,6 +20,7 @@ export function useActiveOrganization() {
             media: { $each: true },
             textStyles: { $each: true },
             presentations: { $each: { slides: { $each: true } } },
+            fonts: { $each: true },
             $onError: 'catch',
           },
         },

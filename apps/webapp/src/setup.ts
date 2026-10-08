@@ -8,6 +8,7 @@ import {
   useManageSongs,
   useVersesHistory,
   useThemeSettings,
+  useManageCustomFonts,
 } from '@worship-view/core';
 
 export const useWebappSetup = () => {
@@ -16,6 +17,7 @@ export const useWebappSetup = () => {
   useVersesHistory();
   useSetupShortcuts();
   useThemeSettings();
+  useManageCustomFonts();
 };
 
 const useSetupShortcuts = () => {

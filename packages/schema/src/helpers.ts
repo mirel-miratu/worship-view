@@ -1,5 +1,5 @@
 import { Group } from 'jazz-tools';
-import { OrganizationType, SongType, ServiceListItemType, ServiceListType, MediaItemType, TextStyleType, PresentationType } from './schema';
+import { OrganizationType, SongType, ServiceListItemType, ServiceListType, MediaItemType, TextStyleType, PresentationType, CustomFontType } from './schema';
 import { OrganizationWithOwner, CoMapWithSet } from './types';
 
 /**
@@ -137,6 +137,19 @@ export function getPresentationsArray(
   if (!organization?.presentations) return [];
   if (isCoListLoaded<PresentationType>(organization.presentations)) {
     return organization.presentations;
+  }
+  return [];
+}
+
+/**
+ * Get custom fonts from organization as an array (when loaded)
+ */
+export function getFontsArray(
+  organization: OrganizationType | null | undefined,
+): (CustomFontType | null)[] {
+  if (!organization?.fonts) return [];
+  if (isCoListLoaded<CustomFontType>(organization.fonts)) {
+    return organization.fonts;
   }
   return [];
 }

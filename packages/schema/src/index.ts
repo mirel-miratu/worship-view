@@ -7,6 +7,7 @@ export {
   TextStyle,
   PresentationSlide,
   Presentation,
+  CustomFont,
   Organization,
   WorshipViewRoot,
   WorshipViewAccount,
@@ -21,6 +22,7 @@ export type {
   MediaAssetType,
   PresentationSlideType,
   PresentationType,
+  CustomFontType,
   OrganizationType,
   WorshipViewAccountType,
   WorshipViewAccountWithOrganizationsType,
@@ -49,6 +51,7 @@ export {
   getServiceListItemsArray,
   getTextStylesArray,
   getPresentationsArray,
+  getFontsArray,
 } from './helpers';
 
 export { wordlist } from './wordlist';

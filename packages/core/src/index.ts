@@ -114,3 +114,6 @@ export { SettingsClock } from './components/settings/SettingsClock';
 export { default as AudienceScreen } from './components/screens/audience-screen/AudienceScreen';
 export { default as StageScreen } from './components/screens/stage-screen/StageScreen';
 export { default as Sidebar } from './components/layout/Sidebar';
+export { useCustomFonts, useUploadCustomFont, useDeleteCustomFont, useRegisterCustomFonts, useManageCustomFonts } from './hooks/useCustomFonts';
+export type { CustomFontResponse } from './jazz/font-store';
+export { SettingsFonts } from './components/settings/SettingsFonts';

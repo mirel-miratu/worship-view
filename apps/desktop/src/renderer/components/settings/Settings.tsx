@@ -11,6 +11,7 @@ import {
   SettingsAutoMode,
   SettingsSongs,
   SettingsTextStyles,
+  SettingsFonts,
   SettingsClock,
 } from '@worship-view/core';
 import {
@@ -82,6 +83,12 @@ const Settings = () => {
                       className='w-full justify-start rounded-none border-b px-4 py-3 data-[state=active]:bg-background data-[state=active]:shadow-none'
                     >
                       Stiluri text
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value='fonts'
+                      className='w-full justify-start rounded-none border-b px-4 py-3 data-[state=active]:bg-background data-[state=active]:shadow-none'
+                    >
+                      Fonturi
                     </TabsTrigger>
                     <TabsTrigger
                       value='jazz-token'
@@ -161,6 +168,12 @@ const Settings = () => {
                     className='mt-0 flex-1 min-h-0 overflow-hidden'
                   >
                     <SettingsTextStyles />
+                  </TabsContent>
+                  <TabsContent
+                    value='fonts'
+                    className='mt-0 flex-1 min-h-0 overflow-y-auto'
+                  >
+                    <SettingsFonts />
                   </TabsContent>
                   <TabsContent
                     value='jazz-token'
