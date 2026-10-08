@@ -467,6 +467,48 @@ export function useReorderServiceList() {
   return { mutateAsync: mutate, mutate, isLoading, error };
 }
 
+// Hook to move one song within a specific service list
+export function useMoveServiceListItem() {
+  const { activeOrganization } = useActiveOrganization();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const mutate = useCallback(
+    async ({
+      serviceListId,
+      songId,
+      toIndex,
+    }: {
+      serviceListId: string;
+      songId: string;
+      toIndex: number;
+    }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const result = store.moveServiceListItem(
+          activeOrganization,
+          serviceListId,
+          songId,
+          toIndex,
+        );
+        notifySongsDataChanged();
+        return result;
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error('Failed to move service list item');
+        setError(error);
+        throw error;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [activeOrganization],
+  );
+
+  return { mutateAsync: mutate, mutate, isLoading, error };
+}
+
 // Hook to clear a specific service list
 export function useClearServiceList() {
   const { activeOrganization } = useActiveOrganization();

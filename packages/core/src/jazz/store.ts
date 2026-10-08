@@ -88,6 +88,43 @@ function getItemsFromServiceList(
   );
 }
 
+// Items sorted by position, with one entry per song. Concurrent reorders made
+// by older versions could leave the same song in a list more than once; the
+// extra entries are returned separately so callers can ignore or remove them.
+function getOrderedServiceListItems(serviceList: ServiceListType): {
+  unique: ServiceListItemType[];
+  duplicates: ServiceListItemType[];
+} {
+  const sorted = getItemsFromServiceList(serviceList)
+    // Items that are not loaded yet have no songId
+    .filter((item) => typeof item.songId === 'string')
+    .sort(
+      (a, b) =>
+        a.position - b.position || a.$jazz.id.localeCompare(b.$jazz.id),
+    );
+  const seen = new Set<string>();
+  const unique: ServiceListItemType[] = [];
+  const duplicates: ServiceListItemType[] = [];
+  for (const item of sorted) {
+    if (seen.has(item.songId)) {
+      duplicates.push(item);
+    } else {
+      seen.add(item.songId);
+      unique.push(item);
+    }
+  }
+  return { unique, duplicates };
+}
+
+function removeDuplicateServiceListItems(serviceList: ServiceListType): void {
+  const { duplicates } = getOrderedServiceListItems(serviceList);
+  if (duplicates.length === 0 || !serviceList.items) return;
+  const duplicateIds = new Set(duplicates.map((item) => item.$jazz.id));
+  removeCoListItem(serviceList.items, (item: ServiceListItemType | null) =>
+    item ? duplicateIds.has(item.$jazz.id) : false,
+  );
+}
+
 // Get all songs from organization
 export function getSongs(
   organization: OrganizationType | null | undefined,
@@ -252,10 +289,6 @@ export function deleteSong(
         serviceList.items,
         (item: ServiceListItemType | null) => item?.songId === id,
       );
-      const remainingItems = getItemsFromServiceList(serviceList);
-      remainingItems.forEach((item: ServiceListItemType, index: number) => {
-        setCoMapProperty(item, 'position', index + 1);
-      });
     }
   }
 
@@ -492,11 +525,10 @@ export function getServiceListItems(
   serviceListId: string,
 ): ServiceListSongResponse[] {
   const list = findServiceList(organization, serviceListId);
-  const items = getItemsFromServiceList(list);
+  const { unique: items } = getOrderedServiceListItems(list);
   const songs = getSongsFromOrg(organization);
 
   return items
-    .sort((a, b) => a.position - b.position)
     .map((item) => {
       const song = songs.find((s) => s.id === item.songId);
       if (!song) return null;
@@ -589,15 +621,12 @@ export function removeFromServiceList(
     (i: ServiceListItemType | null) => i?.songId === songId,
   );
 
-  const remainingItems = getItemsFromServiceList(list);
-  remainingItems.forEach((item: ServiceListItemType, index: number) => {
-    setCoMapProperty(item, 'position', index + 1);
-  });
-
   return { success: true };
 }
 
-// Reorder items within a specific service list
+// Reorder items within a specific service list.
+// Items are never recreated: only their `position` changes, so concurrent
+// reorders from different devices cannot duplicate songs.
 export function reorderServiceList(
   organization: OrganizationType | null | undefined,
   serviceListId: string,
@@ -608,36 +637,80 @@ export function reorderServiceList(
   }
 
   const list = findServiceList(organization, serviceListId);
-  const items = getItemsFromServiceList(list);
-  const existingItems = new Map(items.map((item) => [item.songId, item]));
-  const orgGroup = getOrganizationGroup(organization);
-
-  // Remove all existing items
-  if (list.items) {
-    items.forEach((item: ServiceListItemType) => {
-      removeCoListItem(
-        list.items,
-        (i: ServiceListItemType | null) => i?.songId === item.songId,
-      );
-    });
-  }
-
-  // Re-add in new order
-  songIds.forEach((songId: string, index: number) => {
-    const existing = existingItems.get(songId);
-    if (existing) {
-      const newItem = ServiceListItem.create(
-        { songId, position: index + 1 },
-        { owner: orgGroup },
-      );
-      if (!list.items) {
-        throw new Error('Service list items not loaded');
-      }
-      (list.items.$jazz as any).push(newItem);
-    }
-  });
+  removeDuplicateServiceListItems(list);
+  const { unique } = getOrderedServiceListItems(list);
+  const bySongId = new Map(unique.map((item) => [item.songId, item]));
+  const ordered = [
+    ...songIds
+      .map((songId) => bySongId.get(songId))
+      .filter((item): item is ServiceListItemType => item !== undefined),
+    // Songs added meanwhile on another device keep their relative order at the end
+    ...unique.filter((item) => !songIds.includes(item.songId)),
+  ];
+  renumberServiceListItems(ordered);
 
   return getServiceListItems(organization, serviceListId);
+}
+
+// Move one song to `toIndex` in the displayed order. Only the moved item is
+// written (its position becomes the midpoint between its new neighbours), so a
+// concurrent move of another song on a different device is preserved as well.
+export function moveServiceListItem(
+  organization: OrganizationType | null | undefined,
+  serviceListId: string,
+  songId: string,
+  toIndex: number,
+): ServiceListSongResponse[] {
+  if (!organization) {
+    throw new Error('No active organization');
+  }
+
+  const list = findServiceList(organization, serviceListId);
+  removeDuplicateServiceListItems(list);
+  const { unique } = getOrderedServiceListItems(list);
+  const moved = unique.find((item) => item.songId === songId);
+  if (!moved) {
+    throw new Error('Song not found in service list');
+  }
+
+  const others = unique.filter((item) => item !== moved);
+  const index = Math.max(0, Math.min(toIndex, others.length));
+  const before = others[index - 1];
+  const after = others[index];
+
+  let position: number;
+  if (before && after) {
+    position = (before.position + after.position) / 2;
+  } else if (before) {
+    position = before.position + 1;
+  } else if (after) {
+    position = after.position - 1;
+  } else {
+    position = 1;
+  }
+
+  const fitsBetween =
+    (!before || position > before.position) &&
+    (!after || position < after.position);
+  if (fitsBetween) {
+    if (moved.position !== position) {
+      setCoMapProperty(moved, 'position', position);
+    }
+  } else {
+    // Neighbours share a position (or ran out of precision): renumber the list
+    others.splice(index, 0, moved);
+    renumberServiceListItems(others);
+  }
+
+  return getServiceListItems(organization, serviceListId);
+}
+
+function renumberServiceListItems(ordered: ServiceListItemType[]): void {
+  ordered.forEach((item, index) => {
+    if (item.position !== index + 1) {
+      setCoMapProperty(item, 'position', index + 1);
+    }
+  });
 }
 
 // Clear all items from a specific service list

@@ -63,7 +63,7 @@ export { useGetPresentations, useUploadPresentation, useRenamePresentation, useD
 export { usePassphraseConfirmed } from './hooks/usePassphraseConfirmed';
 export { default as usePreventScroll } from './hooks/usePreventScroll';
 export { useSongValidation } from './hooks/useSongValidation';
-export { useGetSongs, useSaveSong, useRenameSong, useUpdateSong, useDeleteSong, useGetSongContent, useAddToServiceList, useRemoveFromServiceList, useClearServiceList, useReorderServiceList, useGetServiceLists, useGetServiceListItems, useCreateServiceList, useRenameServiceList, useDeleteServiceList, useDeleteAllSongs } from './hooks/useSongs';
+export { useGetSongs, useSaveSong, useRenameSong, useUpdateSong, useDeleteSong, useGetSongContent, useAddToServiceList, useRemoveFromServiceList, useClearServiceList, useReorderServiceList, useMoveServiceListItem, useGetServiceLists, useGetServiceListItems, useCreateServiceList, useRenameServiceList, useDeleteServiceList, useDeleteAllSongs } from './hooks/useSongs';
 
 // Utils
 export { shouldIgnoreNavigationShortcut } from './utils/shortcut.guards';

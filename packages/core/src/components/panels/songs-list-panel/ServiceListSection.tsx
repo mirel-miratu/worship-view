@@ -8,7 +8,7 @@ import {
   useGetServiceLists,
   useGetServiceListItems,
   useRemoveFromServiceList,
-  useReorderServiceList,
+  useMoveServiceListItem,
   useClearServiceList,
   useCreateServiceList,
   useRenameServiceList,
@@ -33,7 +33,7 @@ const ServiceListAccordionItem = ({
   const dialogs = useAppDialogs();
   const { data: items = [], isLoading } = useGetServiceListItems(serviceList.id);
   const removeMutation = useRemoveFromServiceList();
-  const reorderMutation = useReorderServiceList();
+  const moveMutation = useMoveServiceListItem();
   const clearMutation = useClearServiceList();
   const renameMutation = useRenameServiceList();
   const deleteMutation = useDeleteServiceList();
@@ -95,13 +95,18 @@ const ServiceListAccordionItem = ({
       return;
     }
 
-    const newOrder = [...items];
-    const [draggedItem] = newOrder.splice(draggedIndex, 1);
-    newOrder.splice(dropIndex, 0, draggedItem);
+    const draggedItem = items[draggedIndex];
+    if (!draggedItem) {
+      setDraggedIndex(null);
+      return;
+    }
 
-    const songIds = newOrder.map((item) => item.songId);
     try {
-      await reorderMutation.mutateAsync({ serviceListId: serviceList.id, songIds });
+      await moveMutation.mutateAsync({
+        serviceListId: serviceList.id,
+        songId: draggedItem.songId,
+        toIndex: dropIndex,
+      });
     } catch (error) {
       console.error('Failed to reorder service list:', error);
     }
