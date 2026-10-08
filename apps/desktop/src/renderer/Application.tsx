@@ -1,7 +1,7 @@
 import { useAtom } from 'jotai';
 import React, { memo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Search, Settings } from 'lucide-react';
+import { Menu, Search, Settings } from 'lucide-react';
 import Screens from './components/screens/Screens';
 import SettingsModal from './components/settings/Settings';
 import {
@@ -10,6 +10,7 @@ import {
   selectedTabTypeAtom,
   commandPaletteOpenAtom,
   AppDialogsProvider,
+  openSidebar,
   CommandPalette,
   AppTabs,
   Onboarding,
@@ -53,7 +54,15 @@ const Application: React.FC = () => {
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
             <div className="h-[50px] flex items-center justify-center gap-4 px-2">
-              <div className="flex-1">
+              <div className="flex-1 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => openSidebar()}
+                  aria-label="Deschide meniul"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-accent/70 lg:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
                 <button
                   type="button"
                   onClick={() => setAreScreensEnabled(!areScreensEnabled)}

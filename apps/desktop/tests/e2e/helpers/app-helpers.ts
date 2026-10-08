@@ -58,3 +58,52 @@ export async function getLocalStorage(page: Page, key: string): Promise<unknown>
     return item ? JSON.parse(item) : null;
   }, key);
 }
+
+/**
+ * Below the 1024px breakpoint the sidebar is a drawer opened from the header
+ * menu button. Opens it when needed so sidebar items can be clicked at any
+ * window size (CI displays can be smaller than the requested window).
+ */
+export async function revealSidebar(page: Page): Promise<void> {
+  const menuButton = page.getByRole('button', { name: 'Deschide meniul' });
+  if (!(await menuButton.isVisible())) return;
+  const panel = page.locator('.sidebar-panel');
+  if ((await panel.getAttribute('data-open')) !== 'true') {
+    await menuButton.click();
+  }
+  await panel.evaluate((el) =>
+    Promise.all(el.getAnimations().map((animation) => animation.finished)),
+  );
+}
+
+/**
+ * Resizes the main window. The OS may clamp the size to the display, so the
+ * resulting content width is returned.
+ */
+export async function setMainWindowSize(
+  electronApp: ElectronApplication,
+  width: number,
+  height: number,
+): Promise<number> {
+  return electronApp.evaluate(
+    ({ BrowserWindow }, size) => {
+      const win = BrowserWindow.getAllWindows()[0];
+      win.setSize(size.width, size.height);
+      return win.getContentBounds().width;
+    },
+    { width, height },
+  );
+}
+
+/** Closes the sidebar drawer (narrow windows) by clicking its backdrop. */
+export async function hideSidebar(page: Page): Promise<void> {
+  const panel = page.locator('.sidebar-panel');
+  if ((await panel.getAttribute('data-open')) !== 'true') return;
+  const backdrop = page.locator('.sidebar-backdrop');
+  const box = await backdrop.boundingBox();
+  if (!box) return;
+  await page.mouse.click(box.x + box.width - 10, box.y + box.height / 2);
+  await panel.evaluate((el) =>
+    Promise.all(el.getAnimations().map((animation) => animation.finished)),
+  );
+}
