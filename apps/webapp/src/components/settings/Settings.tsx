@@ -30,7 +30,7 @@ const Settings = () => {
 
   return (
     <Dialog open={areSettingsOpen} onOpenChange={setAreSettingsOpen}>
-      <DialogContent className='w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 overflow-hidden'>
+      <DialogContent className='w-[90vw] max-w-[90vw] h-[90vh] max-h-[90vh] p-0 overflow-hidden flex flex-col'>
         <DialogHeader className='sr-only'>
           <DialogTitle>Setări</DialogTitle>
           <DialogDescription>
@@ -41,7 +41,7 @@ const Settings = () => {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className='flex h-full flex-col md:flex-row'
+          className='flex-1 min-h-0 overflow-hidden'
         >
           <div className='flex h-full w-full flex-col md:flex-row'>
             <div className='md:w-48 border-b md:border-b-0 md:border-r bg-muted/30 flex-shrink-0'>
