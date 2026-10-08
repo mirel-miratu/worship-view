@@ -38,8 +38,10 @@ const ServiceListAccordionItem = ({
   const renameMutation = useRenameServiceList();
   const deleteMutation = useDeleteServiceList();
   const [selectedSong, setSelectedSong] = useAtom(selectedSongAtom);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  // Tracked by song id rather than index: changes synced from other devices
+  // can shift indexes while a drag is in progress.
+  const [draggedSongId, setDraggedSongId] = useState<string | null>(null);
+  const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(serviceList.name);
   const [showActions, setShowActions] = useState(false);
@@ -66,58 +68,47 @@ const ServiceListAccordionItem = ({
     return () => window.removeEventListener('scroll', onScroll, true);
   }, [showActions, closeMenu]);
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
+  const handleDragStart = (e: React.DragEvent, songId: string) => {
     e.stopPropagation();
-    setDraggedIndex(index);
+    setDraggedSongId(songId);
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', index.toString());
+    e.dataTransfer.setData('text/plain', songId);
   };
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
+  const handleDragOver = (e: React.DragEvent, songId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (draggedIndex !== null && draggedIndex !== index) {
-      setDragOverIndex(index);
-    } else if (draggedIndex === index) {
-      setDragOverIndex(null);
-    }
+    setDragOverSongId(draggedSongId !== null && draggedSongId !== songId ? songId : null);
   };
 
   const handleDragLeave = (_e: React.DragEvent) => {};
 
-  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+  const handleDrop = async (e: React.DragEvent, targetSongId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragOverIndex(null);
+    setDragOverSongId(null);
 
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null);
-      return;
-    }
-
-    const draggedItem = items[draggedIndex];
-    if (!draggedItem) {
-      setDraggedIndex(null);
-      return;
-    }
+    const songId = draggedSongId;
+    setDraggedSongId(null);
+    const toIndex = items.findIndex((item) => item.songId === targetSongId);
+    if (songId === null || songId === targetSongId || toIndex === -1) return;
+    if (!items.some((item) => item.songId === songId)) return;
 
     try {
       await moveMutation.mutateAsync({
         serviceListId: serviceList.id,
-        songId: draggedItem.songId,
-        toIndex: dropIndex,
+        songId,
+        toIndex,
       });
     } catch (error) {
       console.error('Failed to reorder service list:', error);
     }
-
-    setDraggedIndex(null);
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
     e.stopPropagation();
-    setDraggedIndex(null);
-    setDragOverIndex(null);
+    setDraggedSongId(null);
+    setDragOverSongId(null);
   };
 
   const handleRemove = async (songId: string, e: React.MouseEvent) => {
@@ -306,16 +297,16 @@ const ServiceListAccordionItem = ({
             </div>
           ) : (
             <ul className="p-1 space-y-0.5">
-              {items.map((item: ServiceListSongResponse, index: number) => (
+              {items.map((item: ServiceListSongResponse) => (
                 <li
                   key={item.id}
-                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragOver={(e) => handleDragOver(e, item.songId)}
                   onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, index)}
+                  onDrop={(e) => handleDrop(e, item.songId)}
                   className={`group relative flex h-9 items-center gap-1.5 rounded-md px-1.5 transition-colors cursor-pointer ${
-                    draggedIndex === index ? 'opacity-50' : ''
+                    draggedSongId === item.songId ? 'opacity-50' : ''
                   } ${
-                    dragOverIndex === index
+                    dragOverSongId === item.songId
                       ? 'border border-ring bg-accent'
                       : selectedSong?.id === item.song.id
                         ? 'bg-accent'
@@ -324,7 +315,7 @@ const ServiceListAccordionItem = ({
                 >
                   <div
                     draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragStart={(e) => handleDragStart(e, item.songId)}
                     onDragEnd={handleDragEnd}
                     className="cursor-move flex-shrink-0 touch-none"
                     aria-label="Trageți pentru a reordona"
