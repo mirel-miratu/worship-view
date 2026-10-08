@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { test, expect } from '../fixtures/browser-fixture';
 import type { Page } from '@playwright/test';
+import { isFontRegistered, rendersWithMonospaceFont } from '../helpers/font-helpers';
 
 const FONT_FILE = path.resolve(process.cwd(), '../../assets/fonts/iosevka/iosevka-fixed-regular.woff2');
 const FAMILY = 'Biserica Sans';
@@ -38,6 +39,8 @@ test.describe('Custom Fonts', () => {
     await expect(item).toBeVisible({ timeout: 10000 });
     await expect(item).toContainText('Biserica_Sans.woff2');
     await expect.poll(fontLoaded(mainWindow, FAMILY), { timeout: 10000 }).toBe(true);
+    // The glyphs really come from the uploaded (monospaced) file
+    expect(await rendersWithMonospaceFont(mainWindow, FAMILY)).toBe(true);
   });
 
   test('invalid font file is rejected', async ({ appPage: mainWindow }) => {
@@ -58,6 +61,7 @@ test.describe('Custom Fonts', () => {
     await expect(confirm).toBeVisible();
     await confirm.getByRole('button', { name: 'Șterge', exact: true }).click();
     await expect(mainWindow.locator('[data-testid="custom-font-item"]')).toHaveCount(0);
+    await expect.poll(() => isFontRegistered(mainWindow, FAMILY)).toBe(false);
 
     await mainWindow.locator('[role="tab"]').filter({ hasText: 'Stiluri text' }).click();
     await expect(mainWindow.locator('#style-font')).toContainText('Montserrat');

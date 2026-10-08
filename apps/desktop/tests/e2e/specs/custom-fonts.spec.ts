@@ -3,6 +3,7 @@ import * as path from 'path';
 import { test, expect } from '../fixtures/electron-fixture';
 import { addSong, selectSongFromPalette } from '../helpers/song-helpers';
 import type { Page } from '@playwright/test';
+import { isFontRegistered, rendersWithMonospaceFont } from '../helpers/font-helpers';
 
 const FONT_FILE = path.join(__dirname, '../../../../../assets/fonts/iosevka/iosevka-fixed-regular.woff2');
 const FAMILY = 'Biserica Sans';
@@ -39,6 +40,8 @@ test.describe('Custom Fonts', () => {
     await expect(item).toBeVisible({ timeout: 10000 });
     await expect(item).toContainText('Biserica_Sans.woff2');
     await expect.poll(fontLoaded(mainWindow, FAMILY), { timeout: 10000 }).toBe(true);
+    // The glyphs really come from the uploaded (monospaced) file
+    expect(await rendersWithMonospaceFont(mainWindow, FAMILY)).toBe(true);
   });
 
   test('invalid font file is rejected', async ({ mainWindow }) => {
@@ -66,6 +69,9 @@ test.describe('Custom Fonts', () => {
       .first()
       .evaluate((el) => getComputedStyle(el).fontFamily);
     expect(usedFamily).toContain(FAMILY);
+    // Registered in the projection window's own document and really rendered there
+    expect(await isFontRegistered(audienceWindow, FAMILY)).toBe(true);
+    expect(await rendersWithMonospaceFont(audienceWindow, FAMILY)).toBe(true);
   });
 
   test('deleting a font used by a style reverts the style to Montserrat', async ({ mainWindow }) => {
@@ -79,6 +85,7 @@ test.describe('Custom Fonts', () => {
     await expect(confirm).toBeVisible();
     await confirm.getByRole('button', { name: 'Șterge', exact: true }).click();
     await expect(mainWindow.locator('[data-testid="custom-font-item"]')).toHaveCount(0);
+    await expect.poll(() => isFontRegistered(mainWindow, FAMILY)).toBe(false);
 
     await mainWindow.locator('[role="tab"]').filter({ hasText: 'Stiluri text' }).click();
     await expect(mainWindow.locator('#style-font')).toContainText('Montserrat');
