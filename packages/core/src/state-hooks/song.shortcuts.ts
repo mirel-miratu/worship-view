@@ -5,10 +5,9 @@ import { useAtom } from 'jotai';
 import { useCallback } from 'react';
 import useShortcuts from '../utils/useShortcuts';
 import { shouldIgnoreNavigationShortcut } from '../utils/shortcut.guards';
+import { NEXT_SLIDE_KEYS, PREVIOUS_SLIDE_KEYS } from '../utils/navigation.keys';
 import { songInputFocusAtom } from '../state/song.atoms';
 
-const PREVIOUS_KEYS = ['w', 'W', 'ArrowUp', 'a', 'A', 'ArrowLeft'];
-const NEXT_KEYS = ['s', 'S', 'ArrowDown', 'd', 'D', 'ArrowRight'];
 
 const useSongShortcuts = () => {
   useSongControllerShortcuts();
@@ -38,8 +37,8 @@ const useSongControllerShortcuts = () => {
       gotoPreviousSlide();
     }
   }, [selectedTabType, gotoPreviousSlide, songInputFocus, commandPaletteOpen]);
-  useShortcuts(PREVIOUS_KEYS, previous);
-  useShortcuts(NEXT_KEYS, next);
+  useShortcuts(PREVIOUS_SLIDE_KEYS, previous);
+  useShortcuts(NEXT_SLIDE_KEYS, next);
 };
 
 const useStartSongSearchShortcut = () => {

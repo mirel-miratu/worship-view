@@ -7,9 +7,8 @@ import { useCallback } from 'react';
 import useShortcut from '../utils/useShortcut';
 import useShortcuts from '../utils/useShortcuts';
 import { shouldIgnoreNavigationShortcut } from '../utils/shortcut.guards';
+import { NEXT_SLIDE_KEYS, PREVIOUS_SLIDE_KEYS } from '../utils/navigation.keys';
 
-const PREVIOUS_KEYS = ['w', 'W', 'ArrowUp', 'a', 'A', 'ArrowLeft'];
-const NEXT_KEYS = ['s', 'S', 'ArrowDown', 'd', 'D', 'ArrowRight'];
 
 const usePresentationShortcuts = () => {
   const { gotoNextSlide, gotoPreviousSlide } = usePresentationControl();
@@ -46,8 +45,8 @@ const usePresentationShortcuts = () => {
     setIsPlaying(!isPlaying);
   }, [selectedTabType, commandPaletteOpen, presentationInputFocus, selectedSlide, isPlaying, setIsPlaying]);
 
-  useShortcuts(PREVIOUS_KEYS, previous);
-  useShortcuts(NEXT_KEYS, next);
+  useShortcuts(PREVIOUS_SLIDE_KEYS, previous);
+  useShortcuts(NEXT_SLIDE_KEYS, next);
   useShortcut(' ', togglePlayPause);
 };
 

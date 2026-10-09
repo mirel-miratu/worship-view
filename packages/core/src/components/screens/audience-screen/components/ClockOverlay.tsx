@@ -11,6 +11,7 @@ import {
 } from '../../../../state/clock.atoms';
 import {
   currentProjectionTypeAtom,
+  projectionBlankedAtom,
   verseProjectionEnabledAtom,
 } from '../../../../state/projection.atoms';
 import { selectedSongSlideAtom } from '../../../../state/song.atoms';
@@ -55,13 +56,16 @@ const ClockOverlay: FC = () => {
   const [currentProjectionType] = useAtom(currentProjectionTypeAtom);
   const [verseProjectionEnabled] = useAtom(verseProjectionEnabledAtom);
   const [selectedSongSlide] = useAtom(selectedSongSlideAtom);
+  const [blanked] = useAtom(projectionBlankedAtom);
   const activeStyle = useActiveTextStyle();
   const [now, setNow] = useState(() => new Date());
+  // Blank boundary slides and the blank screen leave the screen empty, so the
+  // clock stays visible
   const shouldHideForProjectedText =
-    // Blank boundary slides leave the screen empty, so the clock stays visible
-    (currentProjectionType === 'song' &&
+    !blanked &&
+    ((currentProjectionType === 'song' &&
       !!selectedSongSlide?.lines.some((line) => line.trim() !== '')) ||
-    (currentProjectionType === 'verse' && verseProjectionEnabled);
+      (currentProjectionType === 'verse' && verseProjectionEnabled));
 
   useEffect(() => {
     if (!enabled) return;

@@ -6,6 +6,7 @@ import Screens from './components/screens/Screens';
 import SettingsModal from './components/settings/Settings';
 import {
   areScreensEnabledAtom,
+  projectionBlankedAtom,
   areSettingsOpenAtom,
   selectedTabTypeAtom,
   commandPaletteOpenAtom,
@@ -40,6 +41,7 @@ const Generics = memo(function Generics() {
 
 const Application: React.FC = () => {
   const [areScreensEnabled, setAreScreensEnabled] = useAtom(areScreensEnabledAtom);
+  const [projectionBlanked, setProjectionBlanked] = useAtom(projectionBlankedAtom);
   const [, setAreSettingsOpen] = useAtom(areSettingsOpenAtom);
   const [selectedTabType, setSelectedTabType] = useAtom(selectedTabTypeAtom);
   const [, setCommandPaletteOpen] = useAtom(commandPaletteOpenAtom);
@@ -88,6 +90,17 @@ const Application: React.FC = () => {
                     LIVE
                   </span>
                 </button>
+                {projectionBlanked && (
+                  <button
+                    type="button"
+                    onClick={() => setProjectionBlanked(false)}
+                    className="rounded-2xl border border-border bg-black px-2 py-0.5 text-xs font-semibold text-white"
+                    data-testid="blank-screen-badge"
+                    title="Ecranul audienței este negru (B / . pe telecomandă). Click pentru a reveni."
+                  >
+                    ECRAN NEGRU
+                  </button>
+                )}
               </div>
 
               <button

@@ -1,8 +1,10 @@
 import { FC, useEffect, useRef, useState } from 'react';
+import { useAtom } from 'jotai';
 import MediaBackground from './components/MediaBackground';
 import SlideText from './components/SlideText';
 import ClockOverlay from './components/ClockOverlay';
 import { useRegisterCustomFonts } from '../../../hooks/useCustomFonts';
+import { projectionBlankedAtom } from '../../../state/projection.atoms';
 
 const AudienceScreen: FC = () => {
   // The screen may be portaled into a projection window, which is a separate
@@ -13,12 +15,18 @@ const AudienceScreen: FC = () => {
     setOwnerDocument(rootRef.current?.ownerDocument ?? null);
   }, []);
   useRegisterCustomFonts(ownerDocument);
+  const [blanked] = useAtom(projectionBlankedAtom);
 
   return (
-    <div ref={rootRef} className="bg-black h-full flex justify-center items-center">
-      <SlideText />
+    <div
+      ref={rootRef}
+      className="bg-black h-full flex justify-center items-center"
+      data-blanked={blanked}
+    >
+      {/* Blank screen keeps the selection but shows only the clock */}
+      {!blanked && <SlideText />}
       <ClockOverlay />
-      <MediaBackground />
+      {!blanked && <MediaBackground />}
     </div>
   );
 };
