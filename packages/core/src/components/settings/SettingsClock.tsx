@@ -4,11 +4,14 @@ import {
   clockFormatAtom,
   clockPositionAtom,
   clockFontSizeAtom,
+  clockColorModeAtom,
+  clockCustomColorAtom,
+  ClockColorMode,
   ClockFormat,
   ClockPosition,
   ClockFontSize,
 } from '../../state/clock.atoms';
-import { Label } from '@worship-view/ui';
+import { Input, Label } from '@worship-view/ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@worship-view/ui';
 
 const POSITION_LABELS: Record<ClockPosition, string> = {
@@ -23,8 +26,12 @@ export function SettingsClock() {
   const [format, setFormat] = useAtom(clockFormatAtom);
   const [position, setPosition] = useAtom(clockPositionAtom);
   const [fontSize, setFontSize] = useAtom(clockFontSizeAtom);
+  const [colorMode, setColorMode] = useAtom(clockColorModeAtom);
+  const [customColor, setCustomColor] = useAtom(clockCustomColorAtom);
 
-  const fontSizeOptions: ClockFontSize[] = [100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900];
+  const fontSizeOptions: ClockFontSize[] = [
+    100, 150, 200, 250, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1500, 2000, 2500,
+  ];
 
   return (
     <div className="space-y-4">
@@ -106,6 +113,40 @@ export function SettingsClock() {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="clock-color-mode">Culoare</Label>
+        <Select
+          value={colorMode}
+          onValueChange={(value) => setColorMode(value as ClockColorMode)}
+        >
+          <SelectTrigger id="clock-color-mode" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="style">Ca stilul de text activ</SelectItem>
+            <SelectItem value="custom">Personalizată</SelectItem>
+          </SelectContent>
+        </Select>
+        {colorMode === 'custom' && (
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              aria-label="Alege culoarea ceasului"
+              value={/^#[0-9a-f]{6}$/i.test(customColor) ? customColor : '#ffffff'}
+              onChange={(e) => setCustomColor(e.target.value)}
+              className="h-9 w-12 cursor-pointer rounded border border-input bg-transparent p-1"
+            />
+            <Input
+              id="clock-custom-color"
+              value={customColor}
+              onChange={(e) => setCustomColor(e.target.value)}
+              className="font-mono"
+              placeholder="#ffffff"
+            />
+          </div>
+        )}
       </div>
 
       <p className="text-sm text-muted-foreground">
