@@ -71,7 +71,7 @@ export const LiveToggle: FC = () => {
     <button
       type="button"
       onClick={toggle}
-      className="inline-flex items-center gap-3"
+      className="inline-flex shrink-0 items-center gap-2 sm:gap-3"
       data-testid="enable-button"
       aria-pressed={live}
       title={
@@ -142,8 +142,6 @@ export const usePresentationModeShortcuts = () => {
 const SWIPE_MIN_DISTANCE_PX = 40;
 const TAP_MAX_DISTANCE_PX = 10;
 const TAP_MAX_DURATION_MS = 500;
-const FIT_STEP = 0.92;
-const FIT_MIN_FONT_SIZE_PX = 4;
 
 // Swipes and taps reuse the keyboard shortcuts (same rules per tab as the remote)
 function goTo(direction: 'next' | 'previous') {
@@ -164,72 +162,6 @@ function useViewportSize() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   return size;
-}
-
-const intersects = (a: DOMRect, b: DOMRect) =>
-  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-
-/**
- * True when slide text leaves the screen or runs into the corner badges
- * (slide counter, song key, clock), which are marked with data-fit-avoid.
- */
-function overflows(container: HTMLElement): boolean {
-  const bounds = container.getBoundingClientRect();
-  const avoid = Array.from(container.querySelectorAll<HTMLElement>('[data-fit-avoid]')).map((el) =>
-    el.getBoundingClientRect(),
-  );
-  const texts = Array.from(container.querySelectorAll<HTMLElement>('*')).filter(
-    (el) =>
-      el.childElementCount === 0 &&
-      !!el.textContent?.trim() &&
-      !el.closest('button'),
-  );
-  return texts.some((el) => {
-    const rect = el.getBoundingClientRect();
-    if (rect.width === 0 && rect.height === 0) return false;
-    const outside =
-      rect.left < bounds.left - 1 ||
-      rect.top < bounds.top - 1 ||
-      rect.right > bounds.right + 1 ||
-      rect.bottom > bounds.bottom + 1;
-    if (outside) return true;
-    return !el.closest('[data-fit-avoid]') && avoid.some((badge) => intersects(rect, badge));
-  });
-}
-
-/**
- * Shrinks the text only as much as needed for it to fit on screen (phones),
- * so screens that already fit (laptops, TVs) keep the style's sizes.
- */
-function useFitText(containerRef: React.RefObject<HTMLDivElement | null>, deps: unknown[]) {
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    let frame = 0;
-    const fit = () => {
-      container.style.fontSize = '';
-      let size = parseFloat(getComputedStyle(container).fontSize);
-      for (let i = 0; i < 40 && size > FIT_MIN_FONT_SIZE_PX && overflows(container); i++) {
-        size *= FIT_STEP;
-        container.style.fontSize = `${size}px`;
-      }
-    };
-    const schedule = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(fit);
-    };
-    const observer = new MutationObserver(schedule);
-    observer.observe(container, { childList: true, subtree: true, characterData: true });
-    schedule();
-    // Slide transitions briefly show the old and new slide together
-    const settle = setInterval(schedule, 500);
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-      clearInterval(settle);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps are the layout inputs
-  }, deps);
 }
 
 /** Full-window audience screen shown while presentation mode is on. */
@@ -272,8 +204,6 @@ export const PresentationModeOverlay: FC = () => {
   useEffect(() => () => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
   }, []);
-
-  useFitText(contentRef, [presentationMode, viewport.width, viewport.height, rotated]);
 
   const revealExitButton = () => {
     setShowExit(true);
