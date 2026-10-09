@@ -36,6 +36,7 @@ export function PrayerSlide({ prayerRequests, textStyle }: PrayerSlideProps) {
               fontStyle: textStyle.italic ? 'italic' : 'normal',
               color: textStyle.fontColor,
               textAlign: textStyle.textAlign,
+              letterSpacing: `${textStyle.letterSpacing}em`,
               textShadow: buildTextShadowStyle(textStyle),
             }
           : {

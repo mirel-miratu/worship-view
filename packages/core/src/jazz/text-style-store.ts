@@ -29,6 +29,8 @@ export type TextStyleData = {
   songSlideSize: SongSlideSize;
   verticalAlign: 'top' | 'center' | 'bottom';
   shadowEnabled: boolean;
+  /** Letter spacing in em */
+  letterSpacing: number;
 };
 
 /** Template used when creating the initial style for an organization. */
@@ -49,6 +51,7 @@ export const DEFAULT_TEXT_STYLE_TEMPLATE: Omit<TextStyleData, 'id'> = {
   songSlideSize: 4,
   verticalAlign: 'center',
   shadowEnabled: true,
+  letterSpacing: 0,
 };
 
 /** Last-resort fallback when no organization is loaded. */
@@ -87,6 +90,7 @@ function textStyleToData(item: TextStyleType | null | undefined): TextStyleData 
     songSlideSize: (item.songSlideSize === 0 ? 'full' : item.songSlideSize || 4) as SongSlideSize,
     verticalAlign: (item.verticalAlign as 'top' | 'center' | 'bottom') ?? 'center',
     shadowEnabled: item.shadowEnabled ?? true,
+    letterSpacing: item.letterSpacing ?? 0,
   };
 }
 
@@ -140,6 +144,7 @@ export function createTextStyle(
       songSlideSize: data.songSlideSize === 'full' ? 0 : data.songSlideSize,
       verticalAlign: data.verticalAlign,
       shadowEnabled: data.shadowEnabled,
+      letterSpacing: data.letterSpacing,
     },
     { owner: orgGroup },
   );

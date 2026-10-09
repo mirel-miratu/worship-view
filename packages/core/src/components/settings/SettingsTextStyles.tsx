@@ -190,6 +190,7 @@ function StylePreview({ style, backgroundMedia }: { style: TextStyleData; backgr
             color: style.fontColor,
             textAlign: style.textAlign,
             lineHeight: style.lineHeight,
+            letterSpacing: `${style.letterSpacing}em`,
             textShadow: style.shadowEnabled
               ? `${style.shadowOffsetX}em ${style.shadowOffsetY}em ${style.shadowBlur * 0.5}px ${style.shadowColor}`
               : 'none',
@@ -563,6 +564,24 @@ export function SettingsTextStyles() {
                     value={editValues.lineHeight}
                     onChange={(e) => handleFieldChange('lineHeight', Number(e.target.value))}
 
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="style-letter-spacing">Spațiere caractere (em)</Label>
+                  <Input
+                    id="style-letter-spacing"
+                    type="number"
+                    step="0.01"
+                    min={-0.1}
+                    max={0.5}
+                    value={editValues.letterSpacing}
+                    onChange={(e) =>
+                      handleFieldChange(
+                        'letterSpacing',
+                        Math.min(0.5, Math.max(-0.1, Number(e.target.value) || 0)),
+                      )
+                    }
                   />
                 </div>
 
