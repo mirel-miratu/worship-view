@@ -1,4 +1,4 @@
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   commandPaletteSearchAtom,
@@ -11,9 +11,16 @@ import { useGetPresentations } from '../hooks/usePresentation';
 import { Song } from '../types/song.types';
 import { BibleReferenceType, BibleTextType } from '../types/verse.types';
 import bibleText from '@assets/bibles/VDC.json';
+import {
+  DEFAULT_SONG_SEARCH_MIN_LENGTH,
+  songSearchMinLengthAtom,
+} from '../state/settings.song.atoms';
 
-// Minimum number of characters required before showing song search results
-export const MIN_SONG_SEARCH_LENGTH = 7;
+// Default minimum number of characters before showing song search results;
+// users can lower it in Settings > Cântece (songSearchMinLengthAtom)
+export const MIN_SONG_SEARCH_LENGTH = DEFAULT_SONG_SEARCH_MIN_LENGTH;
+// Lyrics are only searched from this length: shorter queries match almost every song
+const SONG_CONTENT_SEARCH_MIN_LENGTH = 5;
 export const MIN_VERSE_TEXT_SEARCH_LENGTH = 7;
 
 // Maximum number of search results to display
@@ -33,6 +40,7 @@ export const useCommandPaletteSearch = (searchValue?: string) => {
   const [, setResultsAtom] = useAtom(commandPaletteResultsAtom);
   const { data: songs = [] } = useGetSongs();
   const { data: presentations = [] } = useGetPresentations();
+  const songSearchMinLength = useAtomValue(songSearchMinLengthAtom);
   
   // Stabilize setResults to prevent infinite loops
   const setResultsRef = useRef(setResultsAtom);
@@ -246,7 +254,7 @@ export const useCommandPaletteSearch = (searchValue?: string) => {
     
     // Search songs - inline to avoid dependency issues
     // Use songsRef.current to get the latest songs without causing re-renders
-    if (search.trim().length >= MIN_SONG_SEARCH_LENGTH) {
+    if (search.trim().length >= songSearchMinLength) {
       const queryLower = search.toLocaleLowerCase();
       const currentSongs = songsRef.current;
       
@@ -267,9 +275,12 @@ export const useCommandPaletteSearch = (searchValue?: string) => {
       
       // Search for content matches (exclude songs already found by name)
       const nameMatchIds = new Set(nameMatches.map(song => song.id));
-      const contentMatches = validSongs.filter((song: Song) =>
-        !nameMatchIds.has(song.id) && song.fullText.includes(searchTerms)
-      );
+      const contentMatches =
+        search.trim().length >= SONG_CONTENT_SEARCH_MIN_LENGTH
+          ? validSongs.filter((song: Song) =>
+              !nameMatchIds.has(song.id) && song.fullText.includes(searchTerms)
+            )
+          : [];
       
       // Return name matches first, then content matches
       const songResults = [...nameMatches, ...contentMatches];
@@ -327,6 +338,7 @@ export const useCommandPaletteSearch = (searchValue?: string) => {
     });
   }, [
     search,
+    songSearchMinLength,
     songsKey,
     presentations,
     searchVerses,

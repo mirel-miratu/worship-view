@@ -46,7 +46,7 @@ export async function addSong(page: Page, name: string, content: string, key?: s
 
 /**
  * Helper: search for a song in the command palette.
- * Songs require >= 7 characters to appear (MIN_SONG_SEARCH_LENGTH).
+ * Songs require >= 7 characters to appear by default (configurable in Settings > Cântece).
  */
 export async function searchSongInPalette(page: Page, query: string) {
   await openCommandPalette(page);
