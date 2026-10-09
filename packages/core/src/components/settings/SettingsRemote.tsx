@@ -12,7 +12,8 @@ const REMOTE_BUTTONS = [
   {
     button: 'Pornire / oprire prezentare',
     keys: 'F5, apoi Esc (alternativ)',
-    action: 'F5 reafișează proiecția, Esc o ascunde',
+    action:
+      'Fără proiector (sau pe web): pornește / oprește prezentarea pe acest ecran. Cu proiector: F5 reafișează proiecția, Esc o ascunde',
   },
   { button: 'Ecran negru', keys: '. sau B', action: 'Ascunde / reafișează tot de pe ecranul audienței' },
 ];
@@ -21,6 +22,7 @@ function describeKey(key: string): string {
   if (NEXT_SLIDE_KEYS.includes(key)) return 'Slide următor';
   if (PREVIOUS_SLIDE_KEYS.includes(key)) return 'Slide anterior';
   if (BLANK_SCREEN_KEYS.includes(key)) return 'Ecran negru';
+  if (key === 'F5') return 'Prezintă / afișează proiecția';
   if (SHOW_PROJECTION_KEYS.includes(key)) return 'Afișează proiecția';
   if (key === 'Escape') return 'Ascunde proiecția';
   return 'Nicio acțiune';
