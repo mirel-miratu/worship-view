@@ -31,12 +31,15 @@ test.describe('Present on this screen (laptop mirrored to a TV)', () => {
     await expect(slides.nth(1)).toHaveAttribute('data-selected', 'true');
   });
 
-  test('the header button works too', async ({ mainWindow }) => {
+  test('without a projector the LIVE toggle presents on this screen', async ({ mainWindow }) => {
     await selectFirstSlide(mainWindow);
-    await mainWindow.getByRole('button', { name: 'Prezintă pe acest ecran' }).click();
+    const live = mainWindow.getByTestId('enable-button');
+    await expect(live).toHaveAttribute('aria-pressed', 'false');
+    await live.click();
     await expect(overlay(mainWindow)).toContainText(/first slide line/i);
     await mainWindow.keyboard.press('Escape');
     await expect(overlay(mainWindow)).toHaveCount(0);
+    await expect(live).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('with a projector configured, F5 keeps its usual meaning', async ({ mainWindow, audienceWindow }) => {
@@ -50,5 +53,13 @@ test.describe('Present on this screen (laptop mirrored to a TV)', () => {
     // Esc still clears the projection as before
     await mainWindow.keyboard.press('Escape');
     await expect(audienceWindow.locator('body')).not.toContainText(/first slide line/i);
+
+    // The LIVE toggle switches the projector windows, not presentation mode
+    const live = mainWindow.getByTestId('enable-button');
+    await expect(live).toHaveAttribute('aria-pressed', 'true');
+    await live.click();
+    await expect(live).toHaveAttribute('aria-pressed', 'false');
+    await expect(overlay(mainWindow)).toHaveCount(0);
+    // (turning it off closes the projector window, as before)
   });
 });

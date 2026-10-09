@@ -93,23 +93,18 @@ test.describe('Presenter remote (Logitech R400)', () => {
       await mainWindow.keyboard.press(key);
       await expect(audienceWindow.locator('body')).not.toContainText(/slide line/i);
       await expect(audienceWindow.locator('[data-blanked="true"]')).toHaveCount(1);
-      await expect(mainWindow.getByTestId('blank-screen-badge')).toBeVisible();
       await expect(clock).toBeVisible();
 
       await mainWindow.keyboard.press(key);
       await expect(audienceWindow.locator('body')).toContainText(/second slide line/i);
-      await expect(mainWindow.getByTestId('blank-screen-badge')).toHaveCount(0);
     }
 
-    // F5 (slideshow button) also ends the blank screen; so does the header badge
+    // F5 (slideshow button) also ends the blank screen
     await mainWindow.keyboard.press('.');
     await expect(audienceWindow.locator('body')).not.toContainText(/slide line/i);
     await mainWindow.keyboard.press('F5');
     await expect(audienceWindow.locator('body')).toContainText(/second slide line/i);
 
-    await mainWindow.keyboard.press('.');
-    await mainWindow.getByTestId('blank-screen-badge').click();
-    await expect(audienceWindow.locator('body')).toContainText(/second slide line/i);
   });
 
   test('slideshow button (Esc then F5) hides and restores a Bible verse', async ({ mainWindow, audienceWindow }) => {

@@ -17,9 +17,9 @@ async function selectFirstSlide(page: Page) {
 const overlay = (page: Page) => page.getByTestId('presentation-mode');
 
 test.describe('Present on this screen', () => {
-  test('header button shows the projection full window and the remote keeps working', async ({ appPage }) => {
+  test('LIVE toggle shows the projection full window and the remote keeps working', async ({ appPage }) => {
     const slides = await selectFirstSlide(appPage);
-    await appPage.getByRole('button', { name: 'Prezintă pe acest ecran' }).click();
+    await appPage.getByTestId('enable-button').click();
 
     await expect(overlay(appPage)).toBeVisible();
     await expect(overlay(appPage)).toContainText(/first slide line/i);
@@ -39,6 +39,7 @@ test.describe('Present on this screen', () => {
     await appPage.keyboard.press('Escape');
     await expect(overlay(appPage)).toHaveCount(0);
     await expect(slides.nth(1)).toHaveAttribute('data-selected', 'true');
+    await expect(appPage.getByTestId('enable-button')).toHaveAttribute('aria-pressed', 'false');
   });
 
   test('F5 (remote slideshow button) starts it and Esc ends it', async ({ appPage }) => {
@@ -52,7 +53,7 @@ test.describe('Present on this screen', () => {
   });
 
   test('exit button appears when the mouse moves', async ({ appPage }) => {
-    await appPage.getByRole('button', { name: 'Prezintă pe acest ecran' }).click();
+    await appPage.getByTestId('enable-button').click();
     const exit = appPage.getByRole('button', { name: 'Ieși din modul prezentare' });
     await expect(exit).toHaveCSS('opacity', '0');
     await appPage.mouse.move(300, 300);

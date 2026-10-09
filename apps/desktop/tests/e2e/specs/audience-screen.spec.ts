@@ -30,7 +30,9 @@ async function focusAppWindow(page: import('@playwright/test').Page) {
 }
 
 test.describe('Audience Screen', () => {
-  test('enable/disable button toggles', async ({ mainWindow }) => {
+  test('enable/disable button toggles the projector windows', async ({ mainWindow, audienceWindow }) => {
+    // With a projector configured the LIVE toggle switches the projection windows
+    void audienceWindow;
     const enableBtn = mainWindow.locator('[data-testid="enable-button"]');
     await expect(enableBtn).toBeVisible({ timeout: 5000 });
 

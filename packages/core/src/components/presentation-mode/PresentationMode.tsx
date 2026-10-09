@@ -1,12 +1,13 @@
 import { FC, useCallback, useEffect, useRef, useState } from 'react';
 import { useAtom } from 'jotai';
-import { MonitorPlay, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import AudienceScreen from '../screens/audience-screen/AudienceScreen';
 import {
   externalAudienceDisplayConfiguredAtom,
   presentationModeAtom,
 } from '../../state/projection.atoms';
 import { commandPaletteOpenAtom } from '../../state/command.atoms';
+import { areScreensEnabledAtom } from '../../state/screen.atoms';
 import { shouldIgnoreNavigationShortcut } from '../../utils/shortcut.guards';
 
 const EXIT_BUTTON_HIDE_DELAY_MS = 2000;
@@ -26,21 +27,57 @@ function exitFullscreen() {
   }
 }
 
-/** Header button that starts presentation mode on this screen. */
-export const PresentOnThisScreenButton: FC = () => {
-  const [, setPresentationMode] = useAtom(presentationModeAtom);
+/**
+ * LIVE toggle in the header. With a projector/TV configured as audience
+ * display it turns the projection windows on and off (as before); without one
+ * (laptop mirrored to a TV, or the web app) it presents on this screen.
+ */
+export const LiveToggle: FC = () => {
+  const [areScreensEnabled, setAreScreensEnabled] = useAtom(areScreensEnabledAtom);
+  const [presentationMode, setPresentationMode] = useAtom(presentationModeAtom);
+  const [externalAudienceConfigured] = useAtom(externalAudienceDisplayConfiguredAtom);
+  const live = externalAudienceConfigured ? areScreensEnabled : presentationMode;
+
+  const toggle = () => {
+    if (externalAudienceConfigured) {
+      setAreScreensEnabled(!areScreensEnabled);
+    } else if (!presentationMode) {
+      requestFullscreen();
+      setPresentationMode(true);
+    }
+  };
+
   return (
     <button
       type="button"
-      onClick={() => {
-        requestFullscreen();
-        setPresentationMode(true);
-      }}
-      aria-label="Prezintă pe acest ecran"
-      title="Prezintă pe acest ecran (F5 pe telecomandă când nu e configurat un proiector)"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-foreground hover:bg-accent/70"
+      onClick={toggle}
+      className="inline-flex items-center gap-3"
+      data-testid="enable-button"
+      aria-pressed={live}
+      title={
+        externalAudienceConfigured
+          ? 'Proiecție pe ecranul extern'
+          : 'Prezintă pe acest ecran (fără ecran extern conectat)'
+      }
     >
-      <MonitorPlay className="h-6 w-6" />
+      <span
+        className={
+          live
+            ? 'inline-flex h-6 w-11 items-center justify-end rounded-full border border-input bg-primary p-0.5 transition-colors'
+            : 'inline-flex h-6 w-11 items-center justify-start rounded-full border border-input bg-input p-0.5 transition-colors'
+        }
+      >
+        <span className="h-5 w-5 rounded-full bg-background shadow-[0_4px_13px_-3px_rgba(0,0,0,0.15),0_4px_5px_-2px_rgba(0,0,0,0.12)]" />
+      </span>
+      <span
+        className={
+          live
+            ? 'rounded-2xl bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground'
+            : 'rounded-2xl bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground'
+        }
+      >
+        LIVE
+      </span>
     </button>
   );
 };

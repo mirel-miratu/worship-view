@@ -5,15 +5,13 @@ import { Menu, Search, Settings } from 'lucide-react';
 import Screens from './components/screens/Screens';
 import SettingsModal from './components/settings/Settings';
 import {
-  areScreensEnabledAtom,
-  projectionBlankedAtom,
   areSettingsOpenAtom,
   selectedTabTypeAtom,
   commandPaletteOpenAtom,
   AppDialogsProvider,
   openSidebar,
   PresentationModeOverlay,
-  PresentOnThisScreenButton,
+  LiveToggle,
   CommandPalette,
   AppTabs,
   Onboarding,
@@ -42,8 +40,6 @@ const Generics = memo(function Generics() {
 });
 
 const Application: React.FC = () => {
-  const [areScreensEnabled, setAreScreensEnabled] = useAtom(areScreensEnabledAtom);
-  const [projectionBlanked, setProjectionBlanked] = useAtom(projectionBlankedAtom);
   const [, setAreSettingsOpen] = useAtom(areSettingsOpenAtom);
   const [selectedTabType, setSelectedTabType] = useAtom(selectedTabTypeAtom);
   const [, setCommandPaletteOpen] = useAtom(commandPaletteOpenAtom);
@@ -67,42 +63,7 @@ const Application: React.FC = () => {
                 >
                   <Menu className="h-5 w-5" />
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setAreScreensEnabled(!areScreensEnabled)}
-                  className="inline-flex items-center gap-3"
-                  data-testid="enable-button"
-                >
-                  <span
-                    className={
-                      areScreensEnabled
-                        ? 'inline-flex h-6 w-11 items-center justify-end rounded-full border border-input bg-primary p-0.5 transition-colors'
-                        : 'inline-flex h-6 w-11 items-center justify-start rounded-full border border-input bg-input p-0.5 transition-colors'
-                    }
-                  >
-                    <span className="h-5 w-5 rounded-full bg-background shadow-[0_4px_13px_-3px_rgba(0,0,0,0.15),0_4px_5px_-2px_rgba(0,0,0,0.12)]" />
-                  </span>
-                  <span
-                    className={
-                      areScreensEnabled
-                        ? 'rounded-2xl bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground'
-                        : 'rounded-2xl bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground'
-                    }
-                  >
-                    LIVE
-                  </span>
-                </button>
-                {projectionBlanked && (
-                  <button
-                    type="button"
-                    onClick={() => setProjectionBlanked(false)}
-                    className="rounded-2xl border border-border bg-black px-2 py-0.5 text-xs font-semibold text-white"
-                    data-testid="blank-screen-badge"
-                    title="Ecranul audienței este negru (B / . pe telecomandă). Click pentru a reveni."
-                  >
-                    ECRAN NEGRU
-                  </button>
-                )}
+                <LiveToggle />
               </div>
 
               <button
@@ -165,8 +126,6 @@ const Application: React.FC = () => {
                     Prezentări
                   </button>
                 </div>
-
-                <PresentOnThisScreenButton />
 
                 <button
                   type="button"

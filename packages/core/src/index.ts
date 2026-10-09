@@ -124,4 +124,4 @@ export { useCustomFonts, useUploadCustomFont, useDeleteCustomFont, useRegisterCu
 export type { CustomFontResponse } from './jazz/font-store';
 export { SettingsFonts } from './components/settings/SettingsFonts';
 export { SettingsRemote } from './components/settings/SettingsRemote';
-export { PresentationModeOverlay, PresentOnThisScreenButton } from './components/presentation-mode/PresentationMode';
+export { PresentationModeOverlay, LiveToggle } from './components/presentation-mode/PresentationMode';
