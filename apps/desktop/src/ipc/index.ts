@@ -8,6 +8,7 @@ import { MediaCachePreloadType } from './media/media-cache.types';
 import { PresentationPreloadType } from './presentation/presentation.types';
 import {
   useManageProjection,
+  useManageCustomFonts,
   useSongShortcuts,
   useVerseShortcuts,
   useProjectionShortcuts,
@@ -42,6 +43,7 @@ export const useSetup = () => {
   setVideoEnabled(true);
   setMediaCacheApi(getApiClient());
   useManageProjection();
+  useManageCustomFonts();
   useManageSongs();
   useManagePresentations();
   useVersesHistory();

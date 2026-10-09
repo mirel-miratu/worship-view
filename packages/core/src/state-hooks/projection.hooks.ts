@@ -22,6 +22,9 @@ const useProjectionType = () => {
 
   useEffect(() => {
     if (selectedSongSlide) setCurrentProjectionType('song');
+    // A verse or presentation slide may still be selected, so the "none"
+    // effect below would not fire; stop claiming a song is projected.
+    else setCurrentProjectionType((type) => (type === 'song' ? 'none' : type));
   }, [selectedSongSlide, setCurrentProjectionType]);
 
   useEffect(() => {
@@ -30,6 +33,10 @@ const useProjectionType = () => {
 
   useEffect(() => {
     if (selectedPresentationSlide) setCurrentProjectionType('presentation');
+    else
+      setCurrentProjectionType((type) =>
+        type === 'presentation' ? 'none' : type,
+      );
   }, [selectedPresentationSlide, setCurrentProjectionType]);
 
   useEffect(() => {

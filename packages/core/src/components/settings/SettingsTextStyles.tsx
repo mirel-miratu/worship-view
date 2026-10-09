@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTextStyles } from '../../hooks/useTextStyle';
+import { useCustomFonts } from '../../hooks/useCustomFonts';
 import {
   DEFAULT_TEXT_STYLE_TEMPLATE,
   AVAILABLE_FONTS,
@@ -8,7 +9,7 @@ import {
   deleteTextStyle,
 } from '../../jazz/text-style-store';
 import type { TextStyleData } from '../../jazz/text-style-store';
-import { Label, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from '@worship-view/ui';
+import { Label, Button, Input, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue, cn } from '@worship-view/ui';
 import { CheckCircle2, Film, Trash2, Plus, Save, ImageOff } from 'lucide-react';
 import { useGetMediaItems, useMediaBlobUrl, useMediaItemAssetBlobUrl } from '../../hooks/useMedia';
 import type { MediaItemResponse } from '../../jazz/media-store';
@@ -206,6 +207,7 @@ function StylePreview({ style, backgroundMedia }: { style: TextStyleData; backgr
 export function SettingsTextStyles() {
   const dialogs = useAppDialogs();
   const { styles, selectedStyleId, setSelectedStyleId, activeOrganization } = useTextStyles();
+  const customFonts = useCustomFonts();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<TextStyleData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -413,6 +415,19 @@ export function SettingsTextStyles() {
                           {font}
                         </SelectItem>
                       ))}
+                      {customFonts.length > 0 && (
+                        <>
+                          <SelectSeparator />
+                          <SelectGroup>
+                            <SelectLabel>Fonturi proprii</SelectLabel>
+                            {customFonts.map((font) => (
+                              <SelectItem key={font.id} value={font.family}>
+                                <span style={{ fontFamily: font.family }}>{font.family}</span>
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>

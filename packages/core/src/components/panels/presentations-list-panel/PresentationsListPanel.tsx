@@ -9,6 +9,7 @@ import {
 } from '../../../hooks/usePresentation';
 import { selectedPresentationAtom, selectedPresentationSlideIndexAtom } from '../../../state/presentation.atoms';
 import PresentationDeleteDialog from './PresentationDeleteDialog';
+import { closeSidebar } from '../../layout/Sidebar';
 import type { PresentationResponse } from '../../../jazz/presentation-store';
 import type { UploadPhase } from '../../tabs/TabsPresentations';
 
@@ -41,6 +42,7 @@ const PresentationsListPanel: FC<Props> = ({ onUploadClick, uploadPhase, isBusy,
 
   const handleSelect = (presentation: PresentationResponse) => {
     setSelectedPresentation(presentation);
+    closeSidebar();
     setSlideIndex(0);
   };
 

@@ -63,7 +63,7 @@ export { useGetPresentations, useUploadPresentation, useRenamePresentation, useD
 export { usePassphraseConfirmed } from './hooks/usePassphraseConfirmed';
 export { default as usePreventScroll } from './hooks/usePreventScroll';
 export { useSongValidation } from './hooks/useSongValidation';
-export { useGetSongs, useSaveSong, useRenameSong, useUpdateSong, useDeleteSong, useGetSongContent, useAddToServiceList, useRemoveFromServiceList, useClearServiceList, useReorderServiceList, useGetServiceLists, useGetServiceListItems, useCreateServiceList, useRenameServiceList, useDeleteServiceList, useDeleteAllSongs } from './hooks/useSongs';
+export { useGetSongs, useSaveSong, useRenameSong, useUpdateSong, useDeleteSong, useGetSongContent, useAddToServiceList, useRemoveFromServiceList, useClearServiceList, useReorderServiceList, useMoveServiceListItem, useGetServiceLists, useGetServiceListItems, useCreateServiceList, useRenameServiceList, useDeleteServiceList, useDeleteAllSongs } from './hooks/useSongs';
 
 // Utils
 export { shouldIgnoreNavigationShortcut } from './utils/shortcut.guards';
@@ -114,3 +114,6 @@ export { SettingsClock } from './components/settings/SettingsClock';
 export { default as AudienceScreen } from './components/screens/audience-screen/AudienceScreen';
 export { default as StageScreen } from './components/screens/stage-screen/StageScreen';
 export { default as Sidebar } from './components/layout/Sidebar';
+export { useCustomFonts, useUploadCustomFont, useDeleteCustomFont, useRegisterCustomFonts, useManageCustomFonts } from './hooks/useCustomFonts';
+export type { CustomFontResponse } from './jazz/font-store';
+export { SettingsFonts } from './components/settings/SettingsFonts';

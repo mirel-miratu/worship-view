@@ -11,6 +11,7 @@ import {
   currentProjectionTypeAtom,
   verseProjectionEnabledAtom,
 } from '../../../../state/projection.atoms';
+import { selectedSongSlideAtom } from '../../../../state/song.atoms';
 import { useActiveTextStyle } from '../../../../hooks/useTextStyle';
 import { buildTextShadowStyle } from '../../../../jazz/text-style-store';
 
@@ -49,10 +50,13 @@ const ClockOverlay: FC = () => {
   const [fontSize] = useAtom(clockFontSizeAtom);
   const [currentProjectionType] = useAtom(currentProjectionTypeAtom);
   const [verseProjectionEnabled] = useAtom(verseProjectionEnabledAtom);
+  const [selectedSongSlide] = useAtom(selectedSongSlideAtom);
   const activeStyle = useActiveTextStyle();
   const [now, setNow] = useState(() => new Date());
   const shouldHideForProjectedText =
-    currentProjectionType === 'song' ||
+    // Blank boundary slides leave the screen empty, so the clock stays visible
+    (currentProjectionType === 'song' &&
+      !!selectedSongSlide?.lines.some((line) => line.trim() !== '')) ||
     (currentProjectionType === 'verse' && verseProjectionEnabled);
 
   useEffect(() => {

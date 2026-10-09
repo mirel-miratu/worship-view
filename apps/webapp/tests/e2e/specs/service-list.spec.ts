@@ -132,4 +132,33 @@ test.describe('Service List', () => {
     // Initially, service list should be empty
     await ensureDefaultServiceListExpanded(appPage);
   });
+
+  test('reordering by drag keeps each song once in the new order', async ({ appPage }) => {
+    const names = ['Reorder Alfa', 'Reorder Beta', 'Reorder Gama', 'Reorder Delta'];
+    for (const name of names) {
+      await addSong(appPage, name, SONG_CONTENT);
+    }
+    for (const name of names) {
+      await searchSongInPalette(appPage, name.toLowerCase());
+      const item = appPage.locator('[cmdk-item]').filter({ hasText: name });
+      await item.hover();
+      await appPage.locator(`button[aria-label="Adaugă ${name} la lista de melodii"]`).click();
+      await appPage.waitForTimeout(300);
+      await closeCommandPalette(appPage);
+    }
+    await ensureDefaultServiceListExpanded(appPage, names[0]);
+
+    const grip = '[aria-label="Trageți pentru a reordona"]';
+    const rows = appPage.locator('li').filter({ has: appPage.locator(grip) });
+    const order = () => rows.locator('span.flex-1').allInnerTexts();
+
+    await rows.nth(0).locator(grip).dragTo(rows.nth(2));
+    await expect.poll(order).toEqual(['Reorder Beta', 'Reorder Gama', 'Reorder Alfa', 'Reorder Delta']);
+
+    await rows.nth(3).locator(grip).dragTo(rows.nth(0));
+    await expect.poll(order).toEqual(['Reorder Delta', 'Reorder Beta', 'Reorder Gama', 'Reorder Alfa']);
+
+    await rows.nth(1).locator(grip).dragTo(rows.nth(2));
+    await expect.poll(order).toEqual(['Reorder Delta', 'Reorder Gama', 'Reorder Beta', 'Reorder Alfa']);
+  });
 });

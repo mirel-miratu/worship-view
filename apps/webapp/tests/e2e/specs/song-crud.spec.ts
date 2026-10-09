@@ -214,4 +214,19 @@ Verse`;
     // Cancel
     await appPage.locator('button:has-text("Anulează")').click();
   });
+
+  test('add dialog can be closed after a quick reopen on a slow CPU', async ({ appPage }) => {
+    // Reopening while the previous dialog was still animating out used to put
+    // its overlay above the content, blocking every click (flaky on CI).
+    const cdp = await appPage.context().newCDPSession(appPage);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 });
+
+    // Reopen right after cancelling, without waiting for the close animation
+    for (let i = 0; i < 4; i++) {
+      await openCreateSongDialog(appPage);
+      await appPage.locator('#song-name').fill(`Temporary ${i}`);
+      await appPage.locator('button:has-text("Anulează")').click({ timeout: 5000 });
+    }
+    await expect(appPage.locator('text=Adaugă cântec nou')).not.toBeVisible();
+  });
 });
