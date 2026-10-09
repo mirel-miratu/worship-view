@@ -1,10 +1,14 @@
 import { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import { useAtom } from 'jotai';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { Input } from '@worship-view/ui';
+import { Input, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@worship-view/ui';
 import { Music, ListPlus, Pencil, Trash2, Search } from 'lucide-react';
 import { useGetSongs, useDeleteSong, useAddToServiceList, useGetServiceLists } from '../../hooks/useSongs';
-import { settingsSongSlideSizeAtom } from '../../state/settings.song.atoms';
+import {
+  settingsSongSlideSizeAtom,
+  songSearchMinLengthAtom,
+  SONG_SEARCH_MIN_LENGTH_OPTIONS,
+} from '../../state/settings.song.atoms';
 import { selectedTabTypeAtom } from '../../state/tab.atoms';
 import { selectedSongAtom } from '../../state/song.atoms';
 import { areSettingsOpenAtom } from '../../state/settings.atoms';
@@ -26,6 +30,7 @@ export function SettingsSongs() {
   const dialogs = useAppDialogs();
   const { data: rawSongs = [], isLoading } = useGetSongs();
   const [songSlideSize] = useAtom(settingsSongSlideSizeAtom);
+  const [songSearchMinLength, setSongSearchMinLength] = useAtom(songSearchMinLengthAtom);
   const [, setSelectedTabType] = useAtom(selectedTabTypeAtom);
   const [, setSelectedSong] = useAtom(selectedSongAtom);
   const [, setSettingsOpen] = useAtom(areSettingsOpenAtom);
@@ -178,6 +183,33 @@ export function SettingsSongs() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Command palette song search setting */}
+      <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border p-3">
+        <div>
+          <Label htmlFor="song-search-min-length" className="text-sm font-medium">
+            Căutare cântece în paleta de comenzi
+          </Label>
+          <p className="text-xs text-muted-foreground">
+            Numărul minim de caractere după care apar cântece în rezultate (F1/F2)
+          </p>
+        </div>
+        <Select
+          value={String(songSearchMinLength)}
+          onValueChange={(value) => setSongSearchMinLength(Number(value))}
+        >
+          <SelectTrigger id="song-search-min-length" className="w-44 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SONG_SEARCH_MIN_LENGTH_OPTIONS.map((length) => (
+              <SelectItem key={length} value={String(length)}>
+                Minim {length} caractere
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Search bar */}
       <div className="relative mb-3">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

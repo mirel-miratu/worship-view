@@ -1,4 +1,4 @@
-import useGetDisplays from './display/display.hooks';
+import useGetDisplays, { useSyncExternalAudienceDisplay } from './display/display.hooks';
 import { DisplayPreloadType } from './display/display.types';
 import { UpdatePreloadType } from './update/update.types';
 import { SettingsZoomPreloadType } from './settings/settings.zoom.types';
@@ -48,6 +48,7 @@ export const useSetup = () => {
   useManagePresentations();
   useVersesHistory();
   useGetDisplays();
+  useSyncExternalAudienceDisplay();
   useSetupShortcuts();
   useDesktopSettings();
   useAutoBackup();

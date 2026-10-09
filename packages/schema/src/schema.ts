@@ -128,6 +128,8 @@ export const TextStyle = co
     songSlideSize: z.number(), // 1, 2, 4, 8, or 0 (0 = full verse)
     verticalAlign: z.optional(z.enum(['top', 'center', 'bottom'])),
     shadowEnabled: z.optional(z.boolean()),
+    /** Letter spacing in em; optional so older styles keep working (0 when missing) */
+    letterSpacing: z.optional(z.number()),
   })
   .withPermissions({
     onInlineCreate: 'sameAsContainer',

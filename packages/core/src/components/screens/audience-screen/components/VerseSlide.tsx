@@ -43,6 +43,7 @@ const VerseSlide: FC<VerseSlideProps> = ({
             color: textStyle.fontColor,
             textAlign: textStyle.textAlign,
             lineHeight: textStyle.lineHeight,
+            letterSpacing: `${textStyle.letterSpacing}em`,
             textShadow,
           }}
         >
@@ -68,6 +69,7 @@ const VerseSlide: FC<VerseSlideProps> = ({
             color: textStyle.fontColor,
             textAlign: 'right',
             lineHeight: textStyle.lineHeight,
+            letterSpacing: `${textStyle.letterSpacing}em`,
             textShadow,
           }}
         >

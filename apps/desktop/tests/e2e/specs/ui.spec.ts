@@ -10,7 +10,8 @@ test.describe('UI Interactions', () => {
     expect(appContent.length).toBeGreaterThan(100);
   });
 
-  test('enable button toggles state', async ({ mainWindow }) => {
+  test('enable button toggles state with a projector configured', async ({ mainWindow, audienceWindow }) => {
+    void audienceWindow;
     const enableButton = mainWindow.locator('[data-testid="enable-button"]');
     await expect(enableButton).toBeVisible();
 

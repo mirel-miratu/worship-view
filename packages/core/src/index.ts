@@ -1,7 +1,13 @@
 // State (atoms)
 export { selectedSongAtom, selectedSongTextAtom, selectedSongSlideReferenceAtom, selectedSongSlideAtom, nextSongSlideAtom, songInputValueAtom, songInputFocusAtom, totalSongSlidesAtom, currentSongSlideNumberAtom, selectedSongKeyAtom } from './state/song.atoms';
 export { selectedVerseReferenceAtom, selectedVerseTextAtom, verseInputReferenceAtom, verseInputValueAtom, verseInputFocusAtom, versesHistoryAtom } from './state/verse.atoms';
-export { currentProjectionTypeAtom, verseProjectionEnabledAtom } from './state/projection.atoms';
+export {
+  currentProjectionTypeAtom,
+  verseProjectionEnabledAtom,
+  projectionBlankedAtom,
+  presentationModeAtom,
+  externalAudienceDisplayConfiguredAtom,
+} from './state/projection.atoms';
 export { prayerRequestsAtom, prayerRequestFontSizeAtom } from './state/prayer.atoms';
 export { selectedBackgroundMediaItemAtom } from './state/media.atoms';
 export { selectedPresentationAtom, selectedPresentationSlideIndexAtom, selectedPresentationSlideAtom, totalPresentationSlidesAtom, presentationInputFocusAtom, videoPlayingAtom, videoVolumeAtom, videoSeekRequestAtom, videoCurrentTimeAtom, videoDurationAtom } from './state/presentation.atoms';
@@ -117,3 +123,5 @@ export { default as Sidebar } from './components/layout/Sidebar';
 export { useCustomFonts, useUploadCustomFont, useDeleteCustomFont, useRegisterCustomFonts, useManageCustomFonts } from './hooks/useCustomFonts';
 export type { CustomFontResponse } from './jazz/font-store';
 export { SettingsFonts } from './components/settings/SettingsFonts';
+export { SettingsRemote } from './components/settings/SettingsRemote';
+export { PresentationModeOverlay, LiveToggle } from './components/presentation-mode/PresentationMode';

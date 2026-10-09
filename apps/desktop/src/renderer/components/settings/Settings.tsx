@@ -13,6 +13,7 @@ import {
   SettingsTextStyles,
   SettingsFonts,
   SettingsClock,
+  SettingsRemote,
 } from '@worship-view/core';
 import {
   Dialog,
@@ -63,6 +64,12 @@ const Settings = () => {
                   className='w-full justify-start rounded-none border-b px-4 py-3 data-[state=active]:bg-background data-[state=active]:shadow-none'
                 >
                   Aspect
+                </TabsTrigger>
+                <TabsTrigger
+                  value='remote'
+                  className='w-full justify-start rounded-none border-b px-4 py-3 data-[state=active]:bg-background data-[state=active]:shadow-none'
+                >
+                  Telecomandă
                 </TabsTrigger>
                 <TabsTrigger
                   value='automode'
@@ -148,6 +155,12 @@ const Settings = () => {
                 className='mt-0 flex-1 min-h-0 overflow-y-auto'
               >
                 <SettingsAppearance />
+              </TabsContent>
+              <TabsContent
+                value='remote'
+                className='mt-0 flex-1 min-h-0 overflow-y-auto'
+              >
+                <SettingsRemote />
               </TabsContent>
               <TabsContent
                 value='automode'

@@ -8,6 +8,8 @@ import {
   commandPaletteOpenAtom,
   AppDialogsProvider,
   openSidebar,
+  PresentationModeOverlay,
+  LiveToggle,
   CommandPalette,
   AppTabs,
   Onboarding,
@@ -59,7 +61,9 @@ const Application: React.FC = () => {
                 <Menu className="h-5 w-5" />
               </button>
 
-              <div className="hidden lg:flex flex-1" />
+              <div className="flex items-center lg:flex-1">
+                <LiveToggle />
+              </div>
 
               <button
                 type="button"
@@ -123,6 +127,7 @@ const Application: React.FC = () => {
             <div className="h-[calc(100%-50px)] overflow-hidden bg-card">
               <AppTabs />
             </div>
+            <PresentationModeOverlay />
             <Generics />
           </div>
         </Onboarding>

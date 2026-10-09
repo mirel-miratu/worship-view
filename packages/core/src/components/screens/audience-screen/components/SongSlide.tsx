@@ -23,6 +23,7 @@ const SongSlide: FC<SongSlideProps> = ({ lines, textStyle }) => {
                   color: textStyle.fontColor,
                   textAlign: textStyle.textAlign,
                   lineHeight: textStyle.lineHeight,
+                  letterSpacing: `${textStyle.letterSpacing}em`,
                   textShadow: buildTextShadowStyle(textStyle),
                 }
               : { textShadow: '0.06em 0.06em 1px #00000094' }

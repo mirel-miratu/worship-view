@@ -5,10 +5,13 @@ import {
   clockFormatAtom,
   clockPositionAtom,
   clockFontSizeAtom,
+  clockColorModeAtom,
+  clockCustomColorAtom,
   ClockPosition,
 } from '../../../../state/clock.atoms';
 import {
   currentProjectionTypeAtom,
+  projectionBlankedAtom,
   verseProjectionEnabledAtom,
 } from '../../../../state/projection.atoms';
 import { selectedSongSlideAtom } from '../../../../state/song.atoms';
@@ -48,16 +51,21 @@ const ClockOverlay: FC = () => {
   const [format] = useAtom(clockFormatAtom);
   const [position] = useAtom(clockPositionAtom);
   const [fontSize] = useAtom(clockFontSizeAtom);
+  const [colorMode] = useAtom(clockColorModeAtom);
+  const [customColor] = useAtom(clockCustomColorAtom);
   const [currentProjectionType] = useAtom(currentProjectionTypeAtom);
   const [verseProjectionEnabled] = useAtom(verseProjectionEnabledAtom);
   const [selectedSongSlide] = useAtom(selectedSongSlideAtom);
+  const [blanked] = useAtom(projectionBlankedAtom);
   const activeStyle = useActiveTextStyle();
   const [now, setNow] = useState(() => new Date());
+  // Blank boundary slides and the blank screen leave the screen empty, so the
+  // clock stays visible
   const shouldHideForProjectedText =
-    // Blank boundary slides leave the screen empty, so the clock stays visible
-    (currentProjectionType === 'song' &&
+    !blanked &&
+    ((currentProjectionType === 'song' &&
       !!selectedSongSlide?.lines.some((line) => line.trim() !== '')) ||
-    (currentProjectionType === 'verse' && verseProjectionEnabled);
+      (currentProjectionType === 'verse' && verseProjectionEnabled));
 
   useEffect(() => {
     if (!enabled) return;
@@ -69,13 +77,17 @@ const ClockOverlay: FC = () => {
 
   return (
     <div
-      className={`absolute z-20 ${getPositionClasses(position)}`}
+      className={`absolute z-20 whitespace-nowrap ${getPositionClasses(position)}`}
+      data-testid="clock-overlay"
       style={{
         fontFamily: activeStyle.fontFamily,
-        fontSize: `${fontSize}%`,
+        // Large sizes are capped so the clock always fits on smaller projectors
+        // ("12:30 PM" is roughly twice as wide as "14:30")
+        fontSize: `min(${fontSize}%, ${format === '12h' ? 20 : 36}vw, 55vh)`,
         fontWeight: activeStyle.fontWeight,
         fontStyle: activeStyle.italic ? 'italic' : 'normal',
-        color: activeStyle.fontColor,
+        color: colorMode === 'custom' ? customColor : activeStyle.fontColor,
+        letterSpacing: `${activeStyle.letterSpacing}em`,
         textShadow: buildTextShadowStyle(activeStyle),
       }}
     >

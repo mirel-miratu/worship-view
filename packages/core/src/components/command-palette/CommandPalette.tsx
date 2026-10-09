@@ -36,7 +36,8 @@ import {
   Search,
   Presentation,
 } from 'lucide-react';
-import { useCommandPaletteSearch, MIN_SONG_SEARCH_LENGTH } from '../../state-hooks/command.hooks';
+import { useCommandPaletteSearch } from '../../state-hooks/command.hooks';
+import { songSearchMinLengthAtom } from '../../state/settings.song.atoms';
 import { selectedTabTypeAtom } from '../../state/tab.atoms';
 import { selectedSongAtom } from '../../state/song.atoms';
 import { selectedVerseReferenceAtom, versesHistoryAtom } from '../../state/verse.atoms';
@@ -58,6 +59,7 @@ const CommandPalette: FC = () => {
   const dialogs = useAppDialogs();
   const [open, setOpen] = useAtom(commandPaletteOpenAtom);
   const [results] = useAtom(commandPaletteResultsAtom);
+  const [songSearchMinLength] = useAtom(songSearchMinLengthAtom);
   const [songSlideSize] = useAtom(settingsSongSlideSizeAtom);
   const [, setSelectedTabType] = useAtom(selectedTabTypeAtom);
   const [, setSelectedSong] = useAtom(selectedSongAtom);
@@ -325,8 +327,8 @@ const CommandPalette: FC = () => {
                   <div className="p-4 text-center text-sm text-muted-foreground">
                     {searchValue.length === 0
                       ? 'Începeți să tastați pentru a căuta cântece, versete sau comenzi...'
-                      : searchValue.length < MIN_SONG_SEARCH_LENGTH
-                      ? `Tastați cel puțin ${MIN_SONG_SEARCH_LENGTH} caractere pentru a căuta cântece...`
+                      : searchValue.trim().length < songSearchMinLength
+                      ? `Tastați cel puțin ${songSearchMinLength} caractere pentru a căuta cântece...`
                       : 'Niciun rezultat găsit.'}
                   </div>
                 </CommandEmpty>
