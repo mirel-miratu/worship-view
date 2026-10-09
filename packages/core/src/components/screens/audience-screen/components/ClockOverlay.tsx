@@ -79,6 +79,7 @@ const ClockOverlay: FC = () => {
     <div
       className={`absolute z-20 whitespace-nowrap ${getPositionClasses(position)}`}
       data-testid="clock-overlay"
+      data-fit-avoid
       style={{
         fontFamily: activeStyle.fontFamily,
         // Large sizes are capped so the clock always fits on smaller projectors

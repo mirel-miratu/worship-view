@@ -12,16 +12,36 @@ import { shouldIgnoreNavigationShortcut } from '../../utils/shortcut.guards';
 
 const EXIT_BUTTON_HIDE_DELAY_MS = 2000;
 
+const isTouchDevice = () =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: coarse)').matches;
+
+type LockableOrientation = ScreenOrientation & {
+  lock?: (orientation: 'landscape') => Promise<void>;
+  unlock?: () => void;
+};
+
 function requestFullscreen() {
   const root = document.documentElement;
   if (document.fullscreenElement || !root.requestFullscreen) return;
-  root.requestFullscreen().catch(() => {
-    // Fullscreen can be refused (e.g. without a user gesture); the overlay
-    // still covers the whole window.
-  });
+  root
+    .requestFullscreen()
+    .then(() => {
+      // Phones present in landscape; locking only works in fullscreen and is
+      // not supported everywhere (e.g. iPhone), see the rotation fallback below.
+      if (isTouchDevice()) {
+        (screen.orientation as LockableOrientation | undefined)
+          ?.lock?.('landscape')
+          .catch(() => undefined);
+      }
+    })
+    .catch(() => {
+      // Fullscreen can be refused (e.g. without a user gesture); the overlay
+      // still covers the whole window.
+    });
 }
 
 function exitFullscreen() {
+  (screen.orientation as LockableOrientation | undefined)?.unlock?.();
   if (document.fullscreenElement && document.exitFullscreen) {
     document.exitFullscreen().catch(() => undefined);
   }
@@ -119,12 +139,112 @@ export const usePresentationModeShortcuts = () => {
   }, [onKeyDown]);
 };
 
+const SWIPE_MIN_DISTANCE_PX = 40;
+const TAP_MAX_DISTANCE_PX = 10;
+const TAP_MAX_DURATION_MS = 500;
+const FIT_STEP = 0.92;
+const FIT_MIN_FONT_SIZE_PX = 4;
+
+// Swipes and taps reuse the keyboard shortcuts (same rules per tab as the remote)
+function goTo(direction: 'next' | 'previous') {
+  window.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key: direction === 'next' ? 'PageDown' : 'PageUp',
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+}
+
+function useViewportSize() {
+  const [size, setSize] = useState(() => ({ width: window.innerWidth, height: window.innerHeight }));
+  useEffect(() => {
+    const onResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return size;
+}
+
+const intersects = (a: DOMRect, b: DOMRect) =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/**
+ * True when slide text leaves the screen or runs into the corner badges
+ * (slide counter, song key, clock), which are marked with data-fit-avoid.
+ */
+function overflows(container: HTMLElement): boolean {
+  const bounds = container.getBoundingClientRect();
+  const avoid = Array.from(container.querySelectorAll<HTMLElement>('[data-fit-avoid]')).map((el) =>
+    el.getBoundingClientRect(),
+  );
+  const texts = Array.from(container.querySelectorAll<HTMLElement>('*')).filter(
+    (el) =>
+      el.childElementCount === 0 &&
+      !!el.textContent?.trim() &&
+      !el.closest('button'),
+  );
+  return texts.some((el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return false;
+    const outside =
+      rect.left < bounds.left - 1 ||
+      rect.top < bounds.top - 1 ||
+      rect.right > bounds.right + 1 ||
+      rect.bottom > bounds.bottom + 1;
+    if (outside) return true;
+    return !el.closest('[data-fit-avoid]') && avoid.some((badge) => intersects(rect, badge));
+  });
+}
+
+/**
+ * Shrinks the text only as much as needed for it to fit on screen (phones),
+ * so screens that already fit (laptops, TVs) keep the style's sizes.
+ */
+function useFitText(containerRef: React.RefObject<HTMLDivElement | null>, deps: unknown[]) {
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let frame = 0;
+    const fit = () => {
+      container.style.fontSize = '';
+      let size = parseFloat(getComputedStyle(container).fontSize);
+      for (let i = 0; i < 40 && size > FIT_MIN_FONT_SIZE_PX && overflows(container); i++) {
+        size *= FIT_STEP;
+        container.style.fontSize = `${size}px`;
+      }
+    };
+    const schedule = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(fit);
+    };
+    const observer = new MutationObserver(schedule);
+    observer.observe(container, { childList: true, subtree: true, characterData: true });
+    schedule();
+    // Slide transitions briefly show the old and new slide together
+    const settle = setInterval(schedule, 500);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+      clearInterval(settle);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- deps are the layout inputs
+  }, deps);
+}
+
 /** Full-window audience screen shown while presentation mode is on. */
 export const PresentationModeOverlay: FC = () => {
   const [presentationMode, setPresentationMode] = useAtom(presentationModeAtom);
   const [showExit, setShowExit] = useState(false);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wasFullscreen = useRef(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const touchStart = useRef<{ x: number; y: number; time: number } | null>(null);
+  const viewport = useViewportSize();
+  const touch = isTouchDevice();
+  // Phones always present in landscape: when the orientation cannot be locked
+  // and the phone is held upright, the presentation is drawn rotated.
+  const rotated = touch && viewport.height > viewport.width;
 
   const exit = useCallback(() => {
     setPresentationMode(false);
@@ -153,33 +273,88 @@ export const PresentationModeOverlay: FC = () => {
     if (hideTimer.current) clearTimeout(hideTimer.current);
   }, []);
 
+  useFitText(contentRef, [presentationMode, viewport.width, viewport.height, rotated]);
+
   const revealExitButton = () => {
     setShowExit(true);
     if (hideTimer.current) clearTimeout(hideTimer.current);
     hideTimer.current = setTimeout(() => setShowExit(false), EXIT_BUTTON_HIDE_DELAY_MS);
   };
 
+  const onTouchStart = (event: React.TouchEvent) => {
+    const point = event.changedTouches[0];
+    touchStart.current = { x: point.clientX, y: point.clientY, time: Date.now() };
+  };
+
+  const onTouchEnd = (event: React.TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || (event.target as Element).closest('button')) return;
+    const point = event.changedTouches[0];
+    const dx = point.clientX - start.x;
+    const dy = point.clientY - start.y;
+    // Directions in the presentation's own (landscape) frame
+    const contentDx = rotated ? dy : dx;
+    const contentDy = rotated ? -dx : dy;
+    const distance = Math.hypot(dx, dy);
+
+    if (distance >= SWIPE_MIN_DISTANCE_PX) {
+      const forward =
+        Math.abs(contentDx) >= Math.abs(contentDy) ? contentDx < 0 : contentDy < 0;
+      goTo(forward ? 'next' : 'previous');
+      return;
+    }
+    if (distance <= TAP_MAX_DISTANCE_PX && Date.now() - start.time <= TAP_MAX_DURATION_MS) {
+      // Tap the left / right side to go back / forward, the middle shows "exit"
+      const along = rotated ? point.clientY / viewport.height : point.clientX / viewport.width;
+      if (along < 0.3) goTo('previous');
+      else if (along > 0.7) goTo('next');
+      else revealExitButton();
+    }
+  };
+
   if (!presentationMode) return null;
+
+  const contentStyle: React.CSSProperties = rotated
+    ? {
+        position: 'absolute',
+        width: viewport.height,
+        height: viewport.width,
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%) rotate(90deg)',
+      }
+    : { position: 'absolute', inset: 0 };
 
   return (
     <div
       className="fixed inset-0 z-[100] bg-black"
       data-testid="presentation-mode"
-      onMouseMove={revealExitButton}
-      style={{ cursor: showExit ? 'default' : 'none' }}
+      data-rotated={rotated}
+      onPointerMove={(event) => event.pointerType === 'mouse' && revealExitButton()}
+      onTouchStart={onTouchStart}
+      onTouchEnd={onTouchEnd}
+      style={{ cursor: showExit ? 'default' : 'none', touchAction: 'none' }}
     >
-      <AudienceScreen />
-      <button
-        type="button"
-        onClick={exit}
-        aria-label="Ieși din modul prezentare"
-        className={`absolute right-4 top-4 z-[101] inline-flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-sm text-white transition-opacity hover:bg-black/80 ${
-          showExit ? 'opacity-100' : 'pointer-events-none opacity-0'
-        }`}
+      <div
+        ref={contentRef}
+        className="overflow-hidden"
+        style={contentStyle}
+        data-testid="presentation-content"
       >
-        <X className="h-4 w-4" />
-        Ieși (Esc)
-      </button>
+        <AudienceScreen />
+        <button
+          type="button"
+          onClick={exit}
+          aria-label="Ieși din modul prezentare"
+          className={`absolute right-4 top-4 z-[101] inline-flex items-center gap-2 rounded-full bg-black/60 px-4 py-2 text-sm text-white transition-opacity hover:bg-black/80 ${
+            showExit ? 'opacity-100' : 'pointer-events-none opacity-0'
+          }`}
+        >
+          <X className="h-4 w-4" />
+          {touch ? 'Ieși' : 'Ieși (Esc)'}
+        </button>
+      </div>
     </div>
   );
 };
