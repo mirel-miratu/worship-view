@@ -8,6 +8,8 @@ import {
   commandPaletteOpenAtom,
   AppDialogsProvider,
   openSidebar,
+  PresentationModeOverlay,
+  PresentOnThisScreenButton,
   CommandPalette,
   AppTabs,
   Onboarding,
@@ -108,6 +110,8 @@ const Application: React.FC = () => {
                   </button>
                 </div>
 
+                <PresentOnThisScreenButton />
+
                 <button
                   type="button"
                   onClick={() => setAreSettingsOpen(true)}
@@ -123,6 +127,7 @@ const Application: React.FC = () => {
             <div className="h-[calc(100%-50px)] overflow-hidden bg-card">
               <AppTabs />
             </div>
+            <PresentationModeOverlay />
             <Generics />
           </div>
         </Onboarding>

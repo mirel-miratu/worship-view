@@ -15,9 +15,11 @@ import { useCallback } from 'react';
 import useShortcut from '../utils/useShortcut';
 import useShortcuts from '../utils/useShortcuts';
 import { BLANK_SCREEN_KEYS, SHOW_PROJECTION_KEYS } from '../utils/navigation.keys';
+import { usePresentationModeShortcuts } from '../components/presentation-mode/PresentationMode';
 import { shouldIgnoreNavigationShortcut } from '../utils/shortcut.guards';
 
 const useProjectionShortcuts = () => {
+  usePresentationModeShortcuts();
   useEnableProjectionShortcut();
   useClearScreenShortcut();
   useBlankScreenShortcut();

@@ -1,7 +1,13 @@
 // State (atoms)
 export { selectedSongAtom, selectedSongTextAtom, selectedSongSlideReferenceAtom, selectedSongSlideAtom, nextSongSlideAtom, songInputValueAtom, songInputFocusAtom, totalSongSlidesAtom, currentSongSlideNumberAtom, selectedSongKeyAtom } from './state/song.atoms';
 export { selectedVerseReferenceAtom, selectedVerseTextAtom, verseInputReferenceAtom, verseInputValueAtom, verseInputFocusAtom, versesHistoryAtom } from './state/verse.atoms';
-export { currentProjectionTypeAtom, verseProjectionEnabledAtom, projectionBlankedAtom } from './state/projection.atoms';
+export {
+  currentProjectionTypeAtom,
+  verseProjectionEnabledAtom,
+  projectionBlankedAtom,
+  presentationModeAtom,
+  externalAudienceDisplayConfiguredAtom,
+} from './state/projection.atoms';
 export { prayerRequestsAtom, prayerRequestFontSizeAtom } from './state/prayer.atoms';
 export { selectedBackgroundMediaItemAtom } from './state/media.atoms';
 export { selectedPresentationAtom, selectedPresentationSlideIndexAtom, selectedPresentationSlideAtom, totalPresentationSlidesAtom, presentationInputFocusAtom, videoPlayingAtom, videoVolumeAtom, videoSeekRequestAtom, videoCurrentTimeAtom, videoDurationAtom } from './state/presentation.atoms';
@@ -118,3 +124,4 @@ export { useCustomFonts, useUploadCustomFont, useDeleteCustomFont, useRegisterCu
 export type { CustomFontResponse } from './jazz/font-store';
 export { SettingsFonts } from './components/settings/SettingsFonts';
 export { SettingsRemote } from './components/settings/SettingsRemote';
+export { PresentationModeOverlay, PresentOnThisScreenButton } from './components/presentation-mode/PresentationMode';
